@@ -14,9 +14,9 @@ const EmptyState: FC<EmptyStateProps> = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center h-80">
-      <span className="material-icons text-gray-400 text-6xl">{icon}</span>
-      <h3 className="mt-4 text-xl font-medium">No files found</h3>
-      <p className="mt-2 text-gray-500">{message}</p>
+      <span className="material-icons text-muted-foreground text-6xl">{icon}</span>
+      <h3 className="mt-4 text-xl font-medium text-foreground">No files found</h3>
+      <p className="mt-2 text-muted-foreground">{message}</p>
       
       {onUploadClick && (
         <Button 

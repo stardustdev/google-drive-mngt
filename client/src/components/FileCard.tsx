@@ -39,9 +39,9 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow">
       {/* Thumbnail Area */}
-      <div className="h-40 bg-gray-50 flex items-center justify-center border-b p-4">
+      <div className="h-40 bg-muted flex items-center justify-center border-b border-border p-4">
         {isImage && file.thumbnailLink ? (
           <img 
             src={file.thumbnailLink} 
@@ -57,17 +57,17 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
       <div className="p-3">
         <div className="flex items-start justify-between">
           <div className="overflow-hidden">
-            <h3 className="font-medium truncate" title={file.name}>{file.name}</h3>
-            <p className="text-sm text-gray-500 mt-1">Modified: {formattedDate}</p>
+            <h3 className="font-medium truncate text-foreground" title={file.name}>{file.name}</h3>
+            <p className="text-sm text-muted-foreground mt-1">Modified: {formattedDate}</p>
           </div>
           
           {/* File Actions */}
           <div className="relative" ref={menuRef}>
             <button 
-              className="p-1.5 rounded-full hover:bg-google-gray"
+              className="p-1.5 rounded-full hover:bg-muted"
               onClick={handleMenuToggle}
             >
-              <span className="material-icons text-gray-500">more_vert</span>
+              <span className="material-icons text-muted-foreground">more_vert</span>
             </button>
             
             {isMenuOpen && (

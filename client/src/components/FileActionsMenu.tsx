@@ -25,26 +25,26 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
   };
 
   return (
-    <div className="absolute right-0 mt-1 bg-white rounded-md shadow-lg py-1 w-48 z-10">
+    <div className="absolute right-0 mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border">
       <button 
-        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
         onClick={handleDownload}
       >
-        <span className="material-icons mr-3 text-gray-500">download</span>
+        <span className="material-icons mr-3 text-muted-foreground">download</span>
         Download
       </button>
       <a 
         href={file.webViewLink || "#"} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-muted"
       >
-        <span className="material-icons mr-3 text-gray-500">open_in_new</span>
+        <span className="material-icons mr-3 text-muted-foreground">open_in_new</span>
         Open in Drive
       </a>
-      <div className="border-t border-gray-100"></div>
+      <div className="border-t border-border"></div>
       <button 
-        className="flex items-center w-full px-4 py-2 text-sm text-google-red hover:bg-gray-100"
+        className="flex items-center w-full px-4 py-2 text-sm text-google-red hover:bg-muted"
         onClick={() => onAction('delete')}
       >
         <span className="material-icons mr-3 text-google-red">delete</span>

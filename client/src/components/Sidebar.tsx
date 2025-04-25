@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useFiles } from "@/hooks/useFiles";
 
 const Sidebar: FC = () => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { files } = useFiles();
   
   // Calculate storage usage - in a real app this would come from the API
@@ -54,7 +54,7 @@ const Sidebar: FC = () => {
           {navItems.map((item) => (
             <li key={item.path}>
               <div
-                onClick={() => window.location.href = item.path}
+                onClick={() => setLocation(item.path)}
                 className={`flex items-center space-x-3 p-3 rounded-md text-foreground cursor-pointer ${
                   item.active 
                     ? "bg-google-blue/10 text-google-blue" 

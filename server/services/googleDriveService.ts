@@ -17,8 +17,8 @@ class GoogleDriveService {
       // Ensure the token is fresh
       const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
 
-      // Also add query for files in root
-      const query = "'root' in parents and trashed=false";
+      // Get all files that aren't trashed
+      const query = "trashed=false";
       
       const response = await axios.get(`${this.API_BASE_URL}/files`, {
         headers: {
@@ -87,24 +87,35 @@ class GoogleDriveService {
         fileMetadata.parents = [parentFolderId];
       }
 
-      // Create a readable stream from the file buffer
-      const fileStream = new stream.PassThrough();
-      fileStream.end(file.data);
-
-      // Upload the file with metadata
-      const response = await axios.post(
-        `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
-        {
-          metadata: fileMetadata,
-          media: fileStream,
-        },
+      // For direct file upload, we'll use the media upload
+      // First, create a metadata-only file
+      const metadataResponse = await axios.post(
+        `${this.API_BASE_URL}/files`,
+        fileMetadata,
         {
           headers: {
             Authorization: `Bearer ${freshUser.accessToken}`,
-            "Content-Type": "multipart/related",
-          },
+            'Content-Type': 'application/json'
+          }
         }
       );
+      
+      const fileId = metadataResponse.data.id;
+      
+      // Now upload the content to the created file
+      const contentResponse = await axios.patch(
+        `${this.API_BASE_URL}/files/${fileId}?uploadType=media`,
+        file.data,
+        {
+          headers: {
+            Authorization: `Bearer ${freshUser.accessToken}`,
+            'Content-Type': file.mimetype || 'application/octet-stream'
+          }
+        }
+      );
+      
+      // Return the final response
+      const response = contentResponse;
 
       return response.data;
     } catch (error) {

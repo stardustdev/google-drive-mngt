@@ -17,6 +17,7 @@ export interface DriveFile {
   webViewLink?: string;
   modifiedTime: string;
   size?: string;
+  parents?: string[];
 }
 
 // API response types

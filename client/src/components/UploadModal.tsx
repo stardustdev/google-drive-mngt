@@ -1,14 +1,16 @@
-import { FC, useState, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { FC, useState, useRef, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/fileUtils";
+import { Folder } from "lucide-react";
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadComplete: () => void;
+  parentFolderId?: string;
 }
 
 interface SelectedFile {
@@ -16,12 +18,45 @@ interface SelectedFile {
   id: string;
 }
 
-const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete }) => {
+interface FolderInfo {
+  id: string;
+  name: string;
+}
+
+const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, parentFolderId }) => {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [parentFolder, setParentFolder] = useState<FolderInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  // Fetch parent folder info if we have an ID
+  useEffect(() => {
+    if (parentFolderId && isOpen) {
+      const fetchFolderInfo = async () => {
+        try {
+          const response = await fetch(`/api/drive/files/${parentFolderId}`, {
+            credentials: 'include',
+          });
+          
+          if (response.ok) {
+            const folder = await response.json();
+            setParentFolder({
+              id: folder.id,
+              name: folder.name
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching folder info:", error);
+        }
+      };
+      
+      fetchFolderInfo();
+    } else {
+      setParentFolder(null);
+    }
+  }, [parentFolderId, isOpen]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -52,14 +87,17 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete }
       let completedFiles = 0;
       
       for (const selectedFile of selectedFiles) {
-        await uploadFile(selectedFile.file);
+        // Pass the parent folder ID if available
+        await uploadFile(selectedFile.file, parentFolderId);
         completedFiles++;
         setProgress(Math.round((completedFiles / totalFiles) * 100));
       }
       
+      const locationText = parentFolder ? ` to ${parentFolder.name}` : '';
+      
       toast({
         title: "Upload complete",
-        description: `Successfully uploaded ${totalFiles} file${totalFiles !== 1 ? 's' : ''}`,
+        description: `Successfully uploaded ${totalFiles} file${totalFiles !== 1 ? 's' : ''}${locationText}`,
       });
       
       onUploadComplete();
@@ -96,6 +134,12 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete }
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Upload files</DialogTitle>
+          {parentFolder && (
+            <DialogDescription className="flex items-center gap-2 mt-1 text-sm">
+              <Folder className="h-4 w-4" />
+              <span>Uploading to: <span className="font-medium">{parentFolder.name}</span></span>
+            </DialogDescription>
+          )}
         </DialogHeader>
         
         <div className="py-4">

@@ -18,8 +18,9 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
     ? format(new Date(file.modifiedTime), "MMM d, yyyy")
     : "Unknown date";
   
-  // Determine if file is an image
+  // Determine if file is an image or folder
   const isImage = file.mimeType?.startsWith("image/");
+  const isFolder = file.mimeType === "application/vnd.google-apps.folder";
   
   // Close menu when clicking outside
   useEffect(() => {
@@ -38,8 +39,17 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
     setIsMenuOpen(!isMenuOpen);
   };
   
+  const handleCardClick = () => {
+    if (isFolder) {
+      onAction('open-folder', file);
+    }
+  };
+  
   return (
-    <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow">
+    <div 
+      className={`bg-card rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow ${isFolder ? 'cursor-pointer' : ''}`}
+      onClick={handleCardClick}
+    >
       {/* Thumbnail Area */}
       <div className="h-40 bg-muted flex items-center justify-center border-b border-border p-4">
         {isImage && file.thumbnailLink ? (
@@ -49,7 +59,9 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
             className="max-h-full object-contain"
           />
         ) : (
-          <FileTypeIcon mimeType={file.mimeType} size="large" />
+          <div className={`${isFolder ? 'text-blue-500' : ''}`}>
+            <FileTypeIcon mimeType={file.mimeType} size="large" />
+          </div>
         )}
       </div>
       
@@ -57,7 +69,14 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
       <div className="p-3">
         <div className="flex items-start justify-between">
           <div className="overflow-hidden">
-            <h3 className="font-medium truncate text-foreground" title={file.name}>{file.name}</h3>
+            <h3 className="font-medium truncate text-foreground" title={file.name}>
+              {isFolder && (
+                <span className="material-icons mr-1 text-blue-500 align-text-bottom" style={{ fontSize: '1.1rem' }}>
+                  folder
+                </span>
+              )}
+              {file.name}
+            </h3>
             <p className="text-sm text-muted-foreground mt-1">Modified: {formattedDate}</p>
           </div>
           

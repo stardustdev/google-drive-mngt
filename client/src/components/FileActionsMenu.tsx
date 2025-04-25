@@ -10,6 +10,7 @@ interface FileActionsMenuProps {
 
 const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
   const { toast } = useToast();
+  const isFolder = file.mimeType === "application/vnd.google-apps.folder";
 
   const handleDownload = async () => {
     try {
@@ -26,13 +27,24 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
 
   return (
     <div className="absolute right-0 mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border">
-      <button 
-        className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
-        onClick={handleDownload}
-      >
-        <span className="material-icons mr-3 text-muted-foreground">download</span>
-        Download
-      </button>
+      {isFolder ? (
+        <button 
+          className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+          onClick={() => onAction('open-folder')}
+        >
+          <span className="material-icons mr-3 text-muted-foreground">folder_open</span>
+          Open Folder
+        </button>
+      ) : (
+        <button 
+          className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+          onClick={handleDownload}
+        >
+          <span className="material-icons mr-3 text-muted-foreground">download</span>
+          Download
+        </button>
+      )}
+      
       <a 
         href={file.webViewLink || "#"} 
         target="_blank" 
@@ -42,7 +54,17 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
         <span className="material-icons mr-3 text-muted-foreground">open_in_new</span>
         Open in Drive
       </a>
+      
+      <button 
+        className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+        onClick={() => onAction('move')}
+      >
+        <span className="material-icons mr-3 text-muted-foreground">drive_file_move</span>
+        Move
+      </button>
+      
       <div className="border-t border-border"></div>
+      
       <button 
         className="flex items-center w-full px-4 py-2 text-sm text-google-red hover:bg-muted"
         onClick={() => onAction('delete')}

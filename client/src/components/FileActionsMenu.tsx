@@ -26,7 +26,7 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
   };
 
   return (
-    <div className="absolute right-0 mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border">
+    <div className="absolute right-0 mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border transform -translate-x-full">
       {isFolder ? (
         <button 
           className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"

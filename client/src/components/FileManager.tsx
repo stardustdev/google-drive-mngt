@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useFiles } from "@/hooks/useFiles";
 import FileCard from "./FileCard";
+import FileTable from "./FileTable";
 import LoadingState from "./LoadingState";
 import EmptyState from "./EmptyState";
 import ErrorState from "./ErrorState";
@@ -40,7 +41,7 @@ const FileManager: FC = () => {
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isMoveFileModalOpen, setIsMoveFileModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Handlers
@@ -187,12 +188,10 @@ const FileManager: FC = () => {
             icon="folder_open"
             onUploadClick={handleOpenUploadModal}
           />
+        ) : viewMode === 'list' ? (
+          <FileTable files={files || []} onAction={handleFileAction} />
         ) : (
-          <div className={
-            viewMode === 'list' 
-              ? "flex flex-col space-y-2" 
-              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-          }>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {files?.map((file) => (
               <FileCard 
                 key={file.id} 

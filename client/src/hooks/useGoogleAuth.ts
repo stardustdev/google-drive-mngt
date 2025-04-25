@@ -36,7 +36,31 @@ export function useGoogleAuth() {
   }, []);
 
   const login = async () => {
-    window.location.href = "/api/auth/google";
+    try {
+      // First check if the Google OAuth endpoint is available
+      const checkResponse = await fetch("/api/auth/google", {
+        method: "HEAD",
+        credentials: "include",
+        // Don't follow redirects in the check
+        redirect: "manual"
+      });
+      
+      // If we got a redirect response, it means the OAuth endpoint is working
+      if (checkResponse.type === "opaqueredirect") {
+        window.location.href = "/api/auth/google";
+        return;
+      } else {
+        throw new Error("OAuth service unavailable");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      toast({
+        title: "Login failed",
+        description: "Could not connect to Google OAuth service. Please check your configuration.",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const logout = async () => {

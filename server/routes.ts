@@ -23,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resave: false,
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET || "google-drive-manager-secret",
-    })
+    }),
   );
 
   // Initialize passport
@@ -37,7 +37,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback",
+          callbackURL:
+            process.env.GOOGLE_CALLBACK_URL ||
+            "http://localhost:5000/api/auth/google/callback",
           scope: ["profile", "email", "https://www.googleapis.com/auth/drive"],
           accessType: "offline",
           prompt: "consent",
@@ -47,17 +49,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const user = await googleAuthService.handleAuthCallback(
               accessToken,
               refreshToken,
-              profile
+              profile,
             );
             return done(null, user);
           } catch (error) {
             return done(error as Error);
           }
-        }
-      )
+        },
+      ),
     );
   } else {
-    console.warn("Google OAuth credentials missing. Authentication will be unavailable.");
+    console.warn(
+      "Google OAuth credentials missing. Authentication will be unavailable.",
+    );
   }
 
   // Serialize user into session
@@ -70,27 +74,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     done(null, user);
   });
 
+  console.log(
+    "Registering routes:",
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+  );
   // Auth routes - only register if Google credentials are available
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    app.get("/api/auth/google", passport.authenticate("google", {
-      scope: ["profile", "email", "https://www.googleapis.com/auth/drive"],
-      accessType: "offline",
-      prompt: "consent"
-    }));
+    app.get(
+      "/api/auth/google",
+      passport.authenticate("google", {
+        scope: ["profile", "email", "https://www.googleapis.com/auth/drive"],
+        accessType: "offline",
+        prompt: "consent",
+      }),
+    );
 
     app.get(
       "/api/auth/google/callback",
       passport.authenticate("google", { failureRedirect: "/" }),
       (req, res) => {
         res.redirect("/");
-      }
+      },
     );
   } else {
     // Fallback routes for development without OAuth credentials
     app.get("/api/auth/google", (req, res) => {
       res.status(503).json({ message: "Google OAuth is not configured" });
     });
-    
+
     app.get("/api/auth/google/callback", (req, res) => {
       res.redirect("/?error=oauth_not_configured");
     });
@@ -145,11 +157,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const fileId = req.params.fileId;
       const file = await googleDriveService.getFile(req.user, fileId);
-      
-      res.setHeader("Content-Disposition", `attachment; filename="${file.name}"`);
-      res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
-      
-      const fileStream = await googleDriveService.downloadFile(req.user, fileId);
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${file.name}"`,
+      );
+      res.setHeader(
+        "Content-Type",
+        file.mimeType || "application/octet-stream",
+      );
+
+      const fileStream = await googleDriveService.downloadFile(
+        req.user,
+        fileId,
+      );
       fileStream.pipe(res);
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });

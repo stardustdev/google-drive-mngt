@@ -3,11 +3,17 @@ import { apiRequest } from "./queryClient";
 /**
  * Upload a file to Google Drive
  * @param file The file to upload
+ * @param parentFolderId Optional ID of the folder to upload to
  * @returns The uploaded file details
  */
-export const uploadFile = async (file: File) => {
+export const uploadFile = async (file: File, parentFolderId?: string) => {
   const formData = new FormData();
   formData.append("file", file);
+  
+  // Add parent folder ID if provided
+  if (parentFolderId) {
+    formData.append("parentFolderId", parentFolderId);
+  }
 
   const response = await fetch("/api/drive/upload", {
     method: "POST",

@@ -157,7 +157,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const file = req.files.file;
-      const result = await googleDriveService.uploadFile(req.user, file);
+      const parentFolderId = req.body.parentFolderId;
+      
+      // Pass the parent folder ID if available
+      const result = await googleDriveService.uploadFile(req.user, file, parentFolderId);
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });

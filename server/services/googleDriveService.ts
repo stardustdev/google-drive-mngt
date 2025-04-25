@@ -69,17 +69,23 @@ class GoogleDriveService {
    * Upload a file to the user's Google Drive
    * @param user The authenticated user
    * @param file The file to upload
+   * @param parentFolderId Optional parent folder ID
    * @returns The created file details
    */
-  async uploadFile(user: GoogleUser, file: any): Promise<DriveFile> {
+  async uploadFile(user: GoogleUser, file: any, parentFolderId?: string): Promise<DriveFile> {
     try {
       const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
 
       // First create the file metadata
-      const fileMetadata = {
+      const fileMetadata: any = {
         name: file.name,
         mimeType: file.mimetype,
       };
+      
+      // If parent folder ID is provided, add it to the metadata
+      if (parentFolderId) {
+        fileMetadata.parents = [parentFolderId];
+      }
 
       // Create a readable stream from the file buffer
       const fileStream = new stream.PassThrough();

@@ -76,47 +76,60 @@ class GoogleDriveService {
     try {
       const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
 
-      // First create the file metadata
-      const fileMetadata: any = {
+      // Create a metadata object for the file
+      const metadata: any = {
         name: file.name,
         mimeType: file.mimetype,
       };
       
       // If parent folder ID is provided, add it to the metadata
       if (parentFolderId) {
-        fileMetadata.parents = [parentFolderId];
+        metadata.parents = [parentFolderId];
       }
-
-      // For direct file upload, we'll use the media upload
-      // First, create a metadata-only file
-      const metadataResponse = await axios.post(
-        `${this.API_BASE_URL}/files`,
-        fileMetadata,
-        {
-          headers: {
-            Authorization: `Bearer ${freshUser.accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
       
-      const fileId = metadataResponse.data.id;
+      // Create a readable stream from the file buffer
+      const fileStream = new stream.PassThrough();
+      fileStream.end(file.data);
       
-      // Now upload the content to the created file
-      const contentResponse = await axios.patch(
-        `${this.API_BASE_URL}/files/${fileId}?uploadType=media`,
+      // Create a simple multipart boundary
+      const boundary = '-------' + Date.now();
+      const delimiter = "\r\n--" + boundary + "\r\n";
+      const closeDelimiter = "\r\n--" + boundary + "--";
+      
+      // Create multipart request body
+      const multipartRequestBody =
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: ' + file.mimetype + '\r\n\r\n';
+      
+      // Create a buffer from the start part
+      const startBuffer = Buffer.from(multipartRequestBody, 'utf8');
+      
+      // Create a buffer for the end delimiter
+      const endBuffer = Buffer.from(closeDelimiter, 'utf8');
+      
+      // Concatenate buffers for the entire request body
+      const requestBody = Buffer.concat([
+        startBuffer,
         file.data,
+        endBuffer
+      ]);
+      
+      // Upload the file with metadata
+      const response = await axios.post(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        requestBody,
         {
           headers: {
-            Authorization: `Bearer ${freshUser.accessToken}`,
-            'Content-Type': file.mimetype || 'application/octet-stream'
+            'Authorization': `Bearer ${freshUser.accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+            'Content-Length': requestBody.length
           }
         }
       );
       
-      // Return the final response
-      const response = contentResponse;
-
       return response.data;
     } catch (error) {
       console.error("Error uploading file:", error);

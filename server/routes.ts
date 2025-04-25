@@ -138,6 +138,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
+  
+  // Get a specific file or folder by ID
+  app.get("/api/drive/files/:fileId", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = req.params.fileId;
+      const file = await googleDriveService.getFile(req.user, fileId);
+      res.json(file);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
 
   app.post("/api/drive/upload", isAuthenticated, async (req, res) => {
     try {

@@ -17,13 +17,17 @@ class GoogleDriveService {
       // Ensure the token is fresh
       const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
 
+      // Also add query for files in root
+      const query = "'root' in parents and trashed=false";
+      
       const response = await axios.get(`${this.API_BASE_URL}/files`, {
         headers: {
           Authorization: `Bearer ${freshUser.accessToken}`,
         },
         params: {
-          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size)",
-          orderBy: "modifiedTime desc",
+          q: query,
+          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size, parents)",
+          orderBy: "folder,name",
           pageSize: 100,
         },
       });
@@ -212,7 +216,7 @@ class GoogleDriveService {
         },
         params: {
           q: query,
-          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size)",
+          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size, parents)",
           orderBy: "folder,name",
           pageSize: 100,
         },
@@ -289,8 +293,8 @@ class GoogleDriveService {
         },
         params: {
           q: searchQuery,
-          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size)",
-          orderBy: "modifiedTime desc",
+          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size, parents)",
+          orderBy: "folder,name",
           pageSize: 30,
         },
       });

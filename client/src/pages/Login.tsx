@@ -19,13 +19,36 @@ const Login: FC = () => {
     try {
       await login();
       setLocation('/');
-    } catch (error) {
       toast({
-        title: "Authentication failed",
-        description: "Could not authenticate with Google. Click 'Need Help?' for instructions.",
-        variant: "destructive",
+        title: "Login successful",
+        description: "You've been successfully logged in",
       });
-      setActiveTab("help");
+    } catch (error) {
+      const errorMessage = (error instanceof Error) ? error.message : "Unknown error";
+      
+      // Check if error is related to popup blockers
+      if (errorMessage.includes("Popup blocked")) {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups for this site and try again.",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes("redirect_uri_mismatch") || 
+                errorMessage.includes("Authentication failed") ||
+                errorMessage.includes("OAuth service")) {
+        toast({
+          title: "Authentication failed",
+          description: "Could not authenticate with Google. Click 'Need Help?' for instructions.",
+          variant: "destructive",
+        });
+        setActiveTab("help");
+      } else {
+        toast({
+          title: "Login Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -83,37 +106,67 @@ const Login: FC = () => {
           <TabsContent value="help">
             <Card>
               <CardHeader>
-                <CardTitle>OAuth Configuration Help</CardTitle>
+                <CardTitle>Authentication Help</CardTitle>
                 <CardDescription>
-                  Fixing the redirect_uri_mismatch error
+                  Troubleshooting common sign-in issues
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error 400: redirect_uri_mismatch</AlertTitle>
+                  <AlertTitle>Common OAuth Login Issues</AlertTitle>
                   <AlertDescription>
-                    This error occurs when the redirect URI in your Google OAuth configuration doesn't match the one your application is using.
+                    We've identified the most common issues when signing in with Google.
                   </AlertDescription>
                 </Alert>
                 
-                <div className="space-y-2">
-                  <h3 className="font-medium">To fix this error:</h3>
-                  <ol className="list-decimal list-inside space-y-2 text-sm">
-                    <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a></li>
-                    <li>Select your project and find the OAuth 2.0 Client ID you're using</li>
-                    <li>Add the following URL to the list of authorized redirect URIs:
-                      <div className="bg-muted p-2 mt-1 rounded-md overflow-x-auto text-xs">
-                        https://{window.location.hostname}/api/auth/google/callback
-                      </div>
-                    </li>
-                    <li>Also add this local development URL:
-                      <div className="bg-muted p-2 mt-1 rounded-md overflow-x-auto text-xs">
-                        http://localhost:5000/api/auth/google/callback
-                      </div>
-                    </li>
-                    <li>Save your changes and try signing in again</li>
-                  </ol>
+                <div className="divide-y divide-border">
+                  <div className="pb-4 space-y-2">
+                    <h3 className="font-medium">Popup Blocked</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This application uses popup windows for Google authentication. If you see "Popup Blocked" error:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-2 text-sm">
+                      <li>Look for the popup blocker icon in your browser's address bar</li>
+                      <li>Click on it and select "Always allow popups from this site"</li>
+                      <li>Try signing in again</li>
+                    </ol>
+                  </div>
+                  
+                  <div className="py-4 space-y-2">
+                    <h3 className="font-medium">Error 400: redirect_uri_mismatch</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This error occurs when the redirect URI in your Google OAuth configuration doesn't match what the app is using.
+                    </p>
+                    <ol className="list-decimal list-inside space-y-2 text-sm">
+                      <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a></li>
+                      <li>Select your project and find the OAuth 2.0 Client ID you're using</li>
+                      <li>Add the following URL to the list of authorized redirect URIs:
+                        <div className="bg-muted p-2 mt-1 rounded-md overflow-x-auto text-xs">
+                          https://{window.location.hostname}/api/auth/google/callback
+                        </div>
+                      </li>
+                      <li>Also add this local development URL:
+                        <div className="bg-muted p-2 mt-1 rounded-md overflow-x-auto text-xs">
+                          http://localhost:5000/api/auth/google/callback
+                        </div>
+                      </li>
+                      <li>Save your changes and try signing in again</li>
+                    </ol>
+                  </div>
+                  
+                  <div className="pt-4 space-y-2">
+                    <h3 className="font-medium">Authentication Timed Out</h3>
+                    <p className="text-sm text-muted-foreground">
+                      If your authentication process takes too long or seems to hang:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-2 text-sm">
+                      <li>Try refreshing the page and attempting to sign in again</li>
+                      <li>Make sure you're using a stable internet connection</li>
+                      <li>Check if Google's authentication services are experiencing issues</li>
+                      <li>Try using a different browser if the problem persists</li>
+                    </ol>
+                  </div>
                 </div>
               </CardContent>
               <CardFooter>

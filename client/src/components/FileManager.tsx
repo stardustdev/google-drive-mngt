@@ -39,10 +39,10 @@ const FileManager: FC = () => {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Tabs and Actions */}
-      <div className="bg-white border-b px-4 md:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-background border-b border-border px-4 md:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
-          <h2 className="text-lg font-medium">My Files</h2>
-          {files && <div className="text-sm text-gray-500">({files.length} items)</div>}
+          <h2 className="text-lg font-medium text-foreground">My Files</h2>
+          {files && <div className="text-sm text-muted-foreground">({files.length} items)</div>}
         </div>
         
         <div className="flex items-center space-x-2">
@@ -57,13 +57,13 @@ const FileManager: FC = () => {
           <div className="hidden md:flex items-center space-x-1">
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-full ${viewMode === 'list' ? 'bg-google-dark-gray' : 'hover:bg-google-gray'}`}
+              className={`p-2 rounded-full text-foreground ${viewMode === 'list' ? 'bg-muted' : 'hover:bg-muted/50'}`}
             >
               <span className="material-icons">view_list</span>
             </button>
             <button 
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-full ${viewMode === 'grid' ? 'bg-google-dark-gray' : 'hover:bg-google-gray'}`}
+              className={`p-2 rounded-full text-foreground ${viewMode === 'grid' ? 'bg-muted' : 'hover:bg-muted/50'}`}
             >
               <span className="material-icons">grid_view</span>
             </button>

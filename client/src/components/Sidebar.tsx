@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useFiles } from "@/hooks/useFiles";
 
 const Sidebar: FC = () => {
@@ -53,16 +53,17 @@ const Sidebar: FC = () => {
         <ul>
           {navItems.map((item) => (
             <li key={item.path}>
-              <Link href={item.path}>
-                <a className={`flex items-center space-x-3 p-3 rounded-md text-foreground ${
+              <div
+                onClick={() => window.location.href = item.path}
+                className={`flex items-center space-x-3 p-3 rounded-md text-foreground cursor-pointer ${
                   item.active 
                     ? "bg-google-blue/10 text-google-blue" 
                     : "hover:bg-muted"
-                }`}>
-                  <span className="material-icons">{item.icon}</span>
-                  <span>{item.label}</span>
-                </a>
-              </Link>
+                }`}
+              >
+                <span className="material-icons">{item.icon}</span>
+                <span>{item.label}</span>
+              </div>
             </li>
           ))}
         </ul>

@@ -11,7 +11,7 @@ const Home: FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-google-gray">
+    <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar (hidden on mobile) */}
       <Sidebar />
       
@@ -22,7 +22,7 @@ const Home: FC = () => {
             className="fixed inset-0 bg-black/50"
             onClick={toggleSidebar}
           ></div>
-          <div className="fixed inset-y-0 left-0 w-64 bg-white">
+          <div className="fixed inset-y-0 left-0 w-64 bg-background border-r border-border">
             <Sidebar />
           </div>
         </div>

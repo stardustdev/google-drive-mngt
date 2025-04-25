@@ -5,13 +5,27 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import ThemeToggle from "@/components/ThemeToggle";
+import Login from "@/pages/Login";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { AppContextProvider } from "@/lib/AppContext";
+import AuthLayout from "@/components/AuthLayout";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
+      <Route path="/login">
+        <AuthLayout requireAuth={false}>
+          <Login />
+        </AuthLayout>
+      </Route>
+      <Route path="/">
+        <AuthLayout>
+          <Home />
+        </AuthLayout>
+      </Route>
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   );
 }
@@ -20,13 +34,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-background text-foreground">
-          <div className="fixed top-4 right-4 z-50">
-            <ThemeToggle />
-          </div>
-          <Toaster />
-          <Router />
-        </div>
+        <ThemeProvider defaultTheme="system" storageKey="drive-theme">
+          <AppContextProvider>
+            <div className="min-h-screen bg-background text-foreground">
+              <Toaster />
+              <Router />
+            </div>
+          </AppContextProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

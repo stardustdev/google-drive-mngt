@@ -209,6 +209,7 @@ const FileManager: FC = () => {
         isOpen={isUploadModalOpen} 
         onClose={() => setIsUploadModalOpen(false)} 
         onUploadComplete={() => refetch()}
+        parentFolderId={currentFolderId}
       />
 
       <DeleteModal 

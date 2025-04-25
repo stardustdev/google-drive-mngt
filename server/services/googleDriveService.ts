@@ -5,6 +5,7 @@ import stream from "stream";
 
 class GoogleDriveService {
   private readonly API_BASE_URL = "https://www.googleapis.com/drive/v3";
+  private readonly FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
 
   /**
    * List files from the user's Google Drive
@@ -146,6 +147,157 @@ class GoogleDriveService {
       });
     } catch (error) {
       console.error("Error deleting file:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new folder in Google Drive
+   * @param user The authenticated user
+   * @param folderName Name of the folder to create
+   * @param parentId Optional parent folder ID
+   * @returns The created folder details
+   */
+  async createFolder(
+    user: GoogleUser, 
+    folderName: string, 
+    parentId?: string
+  ): Promise<DriveFile> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      const folderMetadata: any = {
+        name: folderName,
+        mimeType: this.FOLDER_MIME_TYPE,
+      };
+      
+      // Add to specified parent folder if provided
+      if (parentId) {
+        folderMetadata.parents = [parentId];
+      }
+      
+      const response = await axios.post(
+        `${this.API_BASE_URL}/files`,
+        folderMetadata,
+        {
+          headers: {
+            Authorization: `Bearer ${freshUser.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * List files within a specific folder
+   * @param user The authenticated user
+   * @param folderId ID of the folder to list contents from
+   * @returns List of files in the folder
+   */
+  async listFolderContents(user: GoogleUser, folderId: string): Promise<DriveFile[]> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      const query = `'${folderId}' in parents and trashed=false`;
+      
+      const response = await axios.get(`${this.API_BASE_URL}/files`, {
+        headers: {
+          Authorization: `Bearer ${freshUser.accessToken}`,
+        },
+        params: {
+          q: query,
+          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size)",
+          orderBy: "folder,name",
+          pageSize: 100,
+        },
+      });
+      
+      return response.data.files || [];
+    } catch (error) {
+      console.error("Error listing folder contents:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Move a file to a different folder
+   * @param user The authenticated user
+   * @param fileId ID of the file to move
+   * @param targetFolderId ID of the destination folder
+   * @param removeFromParents Whether to remove the file from its current parent folders
+   * @returns Updated file details
+   */
+  async moveFile(
+    user: GoogleUser, 
+    fileId: string, 
+    targetFolderId: string,
+    removeFromParents: boolean = false
+  ): Promise<DriveFile> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      const addParents = targetFolderId;
+      let url = `${this.API_BASE_URL}/files/${fileId}?addParents=${addParents}`;
+      
+      if (removeFromParents) {
+        // Get current parents
+        const file = await this.getFile(user, fileId);
+        url += '&removeParents=root';
+      }
+      
+      const response = await axios.patch(
+        url,
+        {}, // Empty body for this request
+        {
+          headers: {
+            Authorization: `Bearer ${freshUser.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error moving file:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search for files by name
+   * @param user The authenticated user
+   * @param query Search query
+   * @returns List of files matching the search
+   */
+  async searchFiles(user: GoogleUser, query: string): Promise<DriveFile[]> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      // Escape special characters in the query
+      const escapedQuery = query.replace(/[\\'"]/g, "\\$&");
+      const searchQuery = `name contains '${escapedQuery}' and trashed=false`;
+      
+      const response = await axios.get(`${this.API_BASE_URL}/files`, {
+        headers: {
+          Authorization: `Bearer ${freshUser.accessToken}`,
+        },
+        params: {
+          q: searchQuery,
+          fields: "files(id, name, mimeType, iconLink, thumbnailLink, webViewLink, modifiedTime, size)",
+          orderBy: "modifiedTime desc",
+          pageSize: 30,
+        },
+      });
+      
+      return response.data.files || [];
+    } catch (error) {
+      console.error("Error searching files:", error);
       throw error;
     }
   }

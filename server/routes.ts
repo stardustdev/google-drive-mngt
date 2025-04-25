@@ -186,6 +186,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
+  
+  // Create a new folder
+  app.post("/api/drive/folders", isAuthenticated, async (req, res) => {
+    try {
+      const { name, parentId } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Folder name is required" });
+      }
+      
+      const folder = await googleDriveService.createFolder(
+        req.user, 
+        name, 
+        parentId
+      );
+      
+      res.json(folder);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
+  
+  // List folder contents
+  app.get("/api/drive/folders/:folderId/files", isAuthenticated, async (req, res) => {
+    try {
+      const folderId = req.params.folderId;
+      const files = await googleDriveService.listFolderContents(req.user, folderId);
+      res.json(files);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
+  
+  // Move a file to a different folder
+  app.patch("/api/drive/files/:fileId/move", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = req.params.fileId;
+      const { targetFolderId, removeFromParents } = req.body;
+      
+      if (!targetFolderId) {
+        return res.status(400).json({ message: "Target folder ID is required" });
+      }
+      
+      const updatedFile = await googleDriveService.moveFile(
+        req.user,
+        fileId,
+        targetFolderId,
+        removeFromParents
+      );
+      
+      res.json(updatedFile);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
+  
+  // Search for files
+  app.get("/api/drive/search", isAuthenticated, async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query) {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      
+      const files = await googleDriveService.searchFiles(req.user, query);
+      res.json(files);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
 
   const httpServer = createServer(app);
 

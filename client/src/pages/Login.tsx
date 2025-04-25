@@ -83,7 +83,7 @@ const Login: FC = () => {
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <Button 
-                  className="flex items-center justify-center w-full bg-google-blue hover:bg-blue-600 space-x-2 text-white"
+                  className="flex items-center justify-center w-full bg-google-blue hover:bg-blue-600 space-x-2 text-primary hover:text-white"
                   onClick={handleLogin}
                   disabled={isLoading}
                 >

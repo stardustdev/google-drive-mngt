@@ -1,6 +1,7 @@
 import { FC, useState, useRef, useEffect } from "react";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useToast } from "@/hooks/use-toast";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -50,7 +51,7 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:px-8">
+    <header className="bg-background border-b border-border h-16 flex items-center justify-between px-4 md:px-8">
       <div className="flex items-center md:hidden">
         <button 
           onClick={toggleSidebar}
@@ -72,7 +73,9 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
         />
       </div>
       
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-3">
+        <ThemeToggle variant="outline" size="icon" />
+        
         {isLoading ? (
           <div className="w-8 h-8 border-t-2 border-b-2 border-google-blue rounded-full animate-spin"></div>
         ) : !user ? (
@@ -99,12 +102,12 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
             </button>
             
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                <div className="block px-4 py-2 text-sm text-gray-700">{user.email}</div>
-                <div className="border-t border-gray-100"></div>
+              <div className="absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg py-1 z-10 border border-border">
+                <div className="block px-4 py-2 text-sm text-foreground">{user.email}</div>
+                <div className="border-t border-border"></div>
                 <button 
                   onClick={handleLogout}
-                  className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full text-left block px-4 py-2 text-sm text-foreground hover:bg-muted"
                 >
                   Sign out
                 </button>

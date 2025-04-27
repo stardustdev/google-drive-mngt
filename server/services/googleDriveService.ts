@@ -335,6 +335,102 @@ class GoogleDriveService {
       throw error;
     }
   }
+
+  /**
+   * Share a file with another user
+   * @param user The authenticated user
+   * @param fileId The ID of the file to share
+   * @param emailAddress The email address of the user to share with
+   * @param role The permission role to grant (reader, writer, commenter)
+   * @param sendNotification Whether to send notification email to the user
+   * @returns The created permission
+   */
+  async shareFile(
+    user: GoogleUser, 
+    fileId: string, 
+    emailAddress: string, 
+    role: 'reader' | 'writer' | 'commenter' = 'reader',
+    sendNotification: boolean = true
+  ): Promise<any> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      const permissionBody = {
+        type: 'user',
+        role: role,
+        emailAddress: emailAddress,
+      };
+      
+      const response = await axios.post(
+        `${this.API_BASE_URL}/files/${fileId}/permissions?sendNotificationEmail=${sendNotification}`,
+        permissionBody,
+        {
+          headers: {
+            Authorization: `Bearer ${freshUser.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error sharing file:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get sharing permissions for a file
+   * @param user The authenticated user
+   * @param fileId The ID of the file to get permissions for
+   * @returns List of permissions for the file
+   */
+  async getFilePermissions(user: GoogleUser, fileId: string): Promise<any[]> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      const response = await axios.get(
+        `${this.API_BASE_URL}/files/${fileId}/permissions`,
+        {
+          headers: {
+            Authorization: `Bearer ${freshUser.accessToken}`,
+          },
+          params: {
+            fields: "permissions(id,emailAddress,role,type)"
+          }
+        }
+      );
+      
+      return response.data.permissions || [];
+    } catch (error) {
+      console.error("Error getting file permissions:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove a permission from a file
+   * @param user The authenticated user
+   * @param fileId The ID of the file
+   * @param permissionId The ID of the permission to remove
+   */
+  async removeFilePermission(user: GoogleUser, fileId: string, permissionId: string): Promise<void> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      await axios.delete(
+        `${this.API_BASE_URL}/files/${fileId}/permissions/${permissionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${freshUser.accessToken}`,
+          }
+        }
+      );
+    } catch (error) {
+      console.error("Error removing file permission:", error);
+      throw error;
+    }
+  }
 }
 
 export const googleDriveService = new GoogleDriveService();

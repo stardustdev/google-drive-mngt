@@ -57,6 +57,14 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
       
       <button 
         className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+        onClick={() => onAction('share')}
+      >
+        <span className="material-icons mr-3 text-muted-foreground">share</span>
+        Share
+      </button>
+      
+      <button 
+        className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
         onClick={() => onAction('move')}
       >
         <span className="material-icons mr-3 text-muted-foreground">drive_file_move</span>

@@ -271,6 +271,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
+  
+  // Share a file with another user
+  app.post("/api/drive/share", isAuthenticated, async (req, res) => {
+    try {
+      const { fileId, emailAddress, role, sendNotification } = req.body;
+      
+      if (!fileId || !emailAddress) {
+        return res.status(400).json({ message: "fileId and emailAddress are required" });
+      }
+      
+      const permission = await googleDriveService.shareFile(
+        req.user, 
+        fileId, 
+        emailAddress, 
+        role || 'reader', 
+        sendNotification !== false
+      );
+      
+      res.json(permission);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
+  
+  // Get file permissions
+  app.get("/api/drive/permissions/:fileId", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = req.params.fileId;
+      
+      if (!fileId) {
+        return res.status(400).json({ message: "fileId is required" });
+      }
+      
+      const permissions = await googleDriveService.getFilePermissions(req.user, fileId);
+      res.json(permissions);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
+  
+  // Remove file permission
+  app.delete("/api/drive/permissions/:fileId/:permissionId", isAuthenticated, async (req, res) => {
+    try {
+      const { fileId, permissionId } = req.params;
+      
+      if (!fileId || !permissionId) {
+        return res.status(400).json({ message: "fileId and permissionId are required" });
+      }
+      
+      await googleDriveService.removeFilePermission(req.user, fileId, permissionId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
 
   const httpServer = createServer(app);
 

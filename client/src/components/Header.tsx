@@ -91,11 +91,11 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
         <ThemeToggle variant="outline" size="icon" />
 
         {isLoading ? (
-          <div className="w-8 h-8 border-t-2 border-b-2 border-google-blue rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin"></div>
         ) : !user ? (
           <button
             onClick={handleLogin}
-            className="flex items-center space-x-2 bg-google-blue hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md"
           >
             <span className="material-icons">login</span>
             <span>Login with Google</span>
@@ -104,7 +104,7 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 hover:bg-muted rounded-full p-1"
             >
               <img
                 src={
@@ -128,7 +128,7 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
                 <div className="border-t border-border"></div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left block px-4 py-2 text-sm text-foreground hover:bg-muted"
+                  className="w-full text-left block px-4 py-2 text-sm text-primary hover:text-white hover:bg-primary"
                 >
                   Sign out
                 </button>

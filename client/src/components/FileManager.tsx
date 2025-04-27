@@ -1,7 +1,6 @@
 import { FC, useState, useEffect } from "react";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useFiles } from "@/hooks/useFiles";
-import { useStorageInfo } from "@/hooks/useStorageInfo";
 import FileCard from "./FileCard";
 import FileTable from "./FileTable";
 import LoadingState from "./LoadingState";
@@ -14,18 +13,17 @@ import { MoveFileModal } from "./MoveFileModal";
 import { ShareFileModal } from "./ShareFileModal";
 import { FolderNavigation } from "./FolderNavigation";
 import { SearchFiles } from "./SearchFiles";
+import { StorageUsage } from "./StorageUsage";
 import { DriveFile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import { 
   UploadCloud, 
   FolderPlus, 
   Grid, 
   List, 
   RefreshCw,
-  FolderOpen,
-  HardDrive
+  FolderOpen
 } from "lucide-react";
 
 const FileManager: FC = () => {
@@ -39,10 +37,7 @@ const FileManager: FC = () => {
     refetch 
   } = useFiles(currentFolderId);
   
-  const {
-    storageInfo,
-    isLoading: isLoadingStorage
-  } = useStorageInfo();
+  // We'll use the StorageUsage component instead of fetching storage info here
   
   // Modal states
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -184,24 +179,7 @@ const FileManager: FC = () => {
               onNavigate={handleNavigateToFolder} 
             />
             
-            {storageInfo && !isLoadingStorage && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <HardDrive size={16} className="text-primary" />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1">
-                    <span>{storageInfo.formattedUsage}</span>
-                    <span>of</span>
-                    <span>{storageInfo.formattedLimit}</span>
-                    <span>used</span>
-                    <span>({storageInfo.usagePercentage}%)</span>
-                  </div>
-                  <Progress 
-                    value={storageInfo.usagePercentage} 
-                    className="h-1.5 w-full md:w-48" 
-                  />
-                </div>
-              </div>
-            )}
+            <StorageUsage />
           </div>
         </div>
       )}

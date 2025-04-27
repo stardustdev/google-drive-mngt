@@ -11,6 +11,7 @@ import DeleteModal from "./DeleteModal";
 import { CreateFolderModal } from "./CreateFolderModal";
 import { MoveFileModal } from "./MoveFileModal";
 import { ShareFileModal } from "./ShareFileModal";
+import { FilePreviewModal } from "./FilePreviewModal";
 import { FolderNavigation } from "./FolderNavigation";
 import { SearchFiles } from "./SearchFiles";
 import { StorageUsage } from "./StorageUsage";
@@ -23,7 +24,8 @@ import {
   Grid, 
   List, 
   RefreshCw,
-  FolderOpen
+  FolderOpen,
+  Eye
 } from "lucide-react";
 
 const FileManager: FC = () => {
@@ -45,6 +47,7 @@ const FileManager: FC = () => {
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isMoveFileModalOpen, setIsMoveFileModalOpen] = useState(false);
   const [isShareFileModalOpen, setIsShareFileModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -75,6 +78,14 @@ const FileManager: FC = () => {
   const handleShareFile = (file: DriveFile) => {
     setSelectedFile(file);
     setIsShareFileModalOpen(true);
+  };
+  
+  const handlePreviewFile = (file: DriveFile) => {
+    // Don't allow preview for folders
+    if (file.mimeType === 'application/vnd.google-apps.folder') return;
+    
+    setSelectedFile(file);
+    setIsPreviewModalOpen(true);
   };
 
   const handleRefresh = async () => {

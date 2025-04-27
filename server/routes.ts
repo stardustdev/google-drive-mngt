@@ -190,6 +190,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
+  
+  // Get file content for preview
+  app.get("/api/drive/files/:fileId/content", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = req.params.fileId;
+      const file = await googleDriveService.getFile(req.user, fileId);
+
+      // Set appropriate content type
+      res.setHeader(
+        "Content-Type",
+        file.mimeType || "application/octet-stream",
+      );
+      
+      // For preview, we don't want to force download
+      // No Content-Disposition header for inline viewing
+
+      const fileStream = await googleDriveService.downloadFile(
+        req.user,
+        fileId,
+      );
+      fileStream.pipe(res);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
 
   app.delete("/api/drive/files/:fileId", isAuthenticated, async (req, res) => {
     try {

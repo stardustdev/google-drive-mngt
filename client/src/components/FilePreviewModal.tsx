@@ -1,11 +1,11 @@
 import { FC, useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { DriveFile } from "@/lib/types";
-import { downloadFile } from "@/lib/fileUtils";
-import { MIME_TYPE_ICONS } from "@/lib/constants";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { formatFileSize } from "@/lib/fileUtils";
+import FileTypeIcon from "./FileTypeIcon";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, X, ExternalLink } from "lucide-react";
+import { format } from "date-fns";
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -18,312 +18,258 @@ export const FilePreviewModal: FC<FilePreviewModalProps> = ({
   onClose,
   file
 }) => {
-  const { toast } = useToast();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewContent, setPreviewContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
+  // Clear states when modal is closed
   useEffect(() => {
-    if (isOpen && file) {
-      setPreviewError(null);
+    if (!isOpen) {
       setPreviewContent(null);
-      loadPreview();
-    } else {
-      // Clean up resources when modal closes
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
-      }
+      setError(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, file]);
+  }, [isOpen]);
 
-  const loadPreview = async () => {
-    if (!file) return;
-    
-    setIsLoading(true);
-    setPreviewError(null);
-    
-    try {
-      // For Google Docs, Sheets, Slides, use the webViewLink directly
-      if (
-        file.mimeType === "application/vnd.google-apps.document" ||
-        file.mimeType === "application/vnd.google-apps.spreadsheet" ||
-        file.mimeType === "application/vnd.google-apps.presentation" ||
-        file.mimeType === "application/vnd.google-apps.form"
-      ) {
-        setPreviewUrl(file.webViewLink || null);
-        setIsLoading(false);
-        return;
-      }
+  // Fetch preview content when file changes
+  useEffect(() => {
+    async function fetchPreviewContent() {
+      if (!file || !isOpen) return;
       
-      // For images, PDFs, text files, fetch and create an object URL
-      if (isPreviewable(file.mimeType)) {
-        const response = await fetch(`/api/drive/files/${file.id}/content`, {
-          credentials: 'include'
-        });
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Skip preview for certain files that can't be previewed as text
+        const skipPreviewTypes = [
+          'application/vnd.google-apps.folder',
+          'application/zip',
+          'application/x-rar-compressed',
+          'application/x-tar',
+          'application/x-7z-compressed',
+          'application/x-gzip',
+          'application/x-bzip2',
+          'application/x-java-archive',
+          'application/x-executable',
+          'application/vnd.android.package-archive',
+          'application/octet-stream',
+          'application/x-msdownload',
+          'application/x-msdos-program',
+        ];
         
-        if (!response.ok) {
-          throw new Error(`Failed to load file: ${response.statusText}`);
-        }
-        
-        // For text files, display the content directly
-        if (isTextFile(file.mimeType)) {
-          const text = await response.text();
-          setPreviewContent(text);
+        // Skip large files (> 2MB)
+        const fileSizeInMB = file.size ? parseInt(file.size) / (1024 * 1024) : 0;
+        if (fileSizeInMB > 2) {
+          setError("File is too large to preview. Please download the file instead.");
           setIsLoading(false);
           return;
         }
         
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPreviewUrl(url);
-      } else {
-        setPreviewError("This file type cannot be previewed");
+        if (skipPreviewTypes.includes(file.mimeType)) {
+          setError("This file type cannot be previewed. Please download the file instead.");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fetch the file content
+        const response = await fetch(`/api/drive/files/${file.id}/content`);
+        
+        if (!response.ok) {
+          throw new Error("Failed to load file content");
+        }
+        
+        // For images, we'll display the image directly
+        if (file.mimeType.startsWith('image/')) {
+          const blob = await response.blob();
+          const imageUrl = URL.createObjectURL(blob);
+          setPreviewContent(imageUrl);
+        } else {
+          // For text files, we'll display the text content
+          const content = await response.text();
+          setPreviewContent(content);
+        }
+      } catch (err) {
+        console.error("Error fetching preview:", err);
+        setError("Failed to load file preview. Please try again later.");
+        toast({
+          title: "Error",
+          description: "Failed to load file preview",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading preview:", error);
-      setPreviewError(error instanceof Error ? error.message : "Failed to load preview");
-      toast({
-        title: "Preview Error",
-        description: "Could not load file preview",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const handleDownload = async () => {
-    if (!file) return;
     
-    try {
-      await downloadFile(file.id, file.name);
-      toast({
-        title: "Download Started",
-        description: `${file.name} is being downloaded`
-      });
-    } catch (error) {
-      console.error("Download error:", error);
-      toast({
-        title: "Download Failed",
-        description: "Could not download file",
-        variant: "destructive"
-      });
-    }
-  };
+    fetchPreviewContent();
+  }, [file, isOpen, toast]);
   
-  const openInNewTab = () => {
-    if (file?.webViewLink) {
-      window.open(file.webViewLink, '_blank');
-    }
-  };
-
-  const isPreviewable = (mimeType: string): boolean => {
-    return (
-      mimeType.startsWith("image/") ||
-      mimeType === "application/pdf" ||
-      isTextFile(mimeType) ||
-      mimeType.startsWith("video/") ||
-      mimeType.startsWith("audio/")
-    );
-  };
+  if (!file) return null;
   
-  const isTextFile = (mimeType: string): boolean => {
-    return (
-      mimeType === "text/plain" ||
-      mimeType === "text/html" ||
-      mimeType === "text/css" ||
-      mimeType === "application/json" ||
-      mimeType === "text/javascript" ||
-      mimeType === "application/javascript" ||
-      mimeType === "text/markdown" ||
-      mimeType === "application/xml" ||
-      mimeType === "text/csv"
-    );
-  };
+  const isImage = file.mimeType.startsWith('image/');
+  const isText = file.mimeType.startsWith('text/') || 
+                file.mimeType.includes('json') || 
+                file.mimeType.includes('xml') || 
+                file.mimeType.includes('javascript') || 
+                file.mimeType.includes('css') || 
+                file.mimeType.includes('html');
+  const isPdf = file.mimeType === 'application/pdf';
+  const isVideo = file.mimeType.startsWith('video/');
+  const isAudio = file.mimeType.startsWith('audio/');
   
-  const getFileIcon = (mimeType: string) => {
-    const iconInfo = MIME_TYPE_ICONS[mimeType] || MIME_TYPE_ICONS["default"];
-    return iconInfo.icon;
-  };
+  const formattedDate = file.modifiedTime 
+    ? format(new Date(file.modifiedTime), "MMMM d, yyyy h:mm a")
+    : "Unknown date";
   
-  const renderPreviewContent = () => {
-    if (!file) return null;
-    
-    if (isLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center h-80">
-          <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Loading preview...</p>
-        </div>
-      );
-    }
-    
-    if (previewError) {
-      const fileIcon = getFileIcon(file.mimeType);
-      return (
-        <div className="flex flex-col items-center justify-center h-80">
-          <div className="mb-6 text-6xl text-primary">
-            <span className="material-icons" style={{ fontSize: '6rem' }}>{fileIcon}</span>
-          </div>
-          <p className="text-muted-foreground mb-2">{previewError}</p>
-          <Button variant="outline" onClick={handleDownload} className="mt-4">
-            <Download className="mr-2 h-4 w-4" /> Download Instead
-          </Button>
-        </div>
-      );
-    }
-    
-    // For Google Docs, Sheets, Slides, Form - display iframe with webViewLink
-    if (
-      file.mimeType === "application/vnd.google-apps.document" ||
-      file.mimeType === "application/vnd.google-apps.spreadsheet" ||
-      file.mimeType === "application/vnd.google-apps.presentation" ||
-      file.mimeType === "application/vnd.google-apps.form"
-    ) {
-      return (
-        <div className="relative w-full h-[60vh]">
-          {previewUrl ? (
-            <iframe 
-              src={previewUrl}
-              className="w-full h-full border-none" 
-              title={file.name}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-muted-foreground">Preview not available</p>
-            </div>
-          )}
-        </div>
-      );
-    }
-    
-    // For text files
-    if (isTextFile(file.mimeType) && previewContent !== null) {
-      return (
-        <div className="w-full h-[60vh] overflow-auto">
-          <pre className="p-4 text-sm bg-muted/50 rounded-md w-full h-full overflow-auto whitespace-pre-wrap">
-            {previewContent}
-          </pre>
-        </div>
-      );
-    }
-    
-    // For images
-    if (file.mimeType.startsWith("image/") && previewUrl) {
-      return (
-        <div className="flex justify-center items-center max-h-[60vh] overflow-auto">
-          <img 
-            src={previewUrl} 
-            alt={file.name} 
-            className="max-w-full max-h-full object-contain"
-          />
-        </div>
-      );
-    }
-    
-    // For PDFs
-    if (file.mimeType === "application/pdf" && previewUrl) {
-      return (
-        <div className="w-full h-[60vh]">
-          <iframe
-            src={previewUrl}
-            className="w-full h-full border-none"
-            title={file.name}
-          />
-        </div>
-      );
-    }
-    
-    // For videos
-    if (file.mimeType.startsWith("video/") && previewUrl) {
-      return (
-        <div className="w-full max-h-[60vh] flex justify-center">
-          <video
-            src={previewUrl}
-            controls
-            className="max-w-full max-h-full"
-          >
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      );
-    }
-    
-    // For audio
-    if (file.mimeType.startsWith("audio/") && previewUrl) {
-      return (
-        <div className="w-full flex flex-col items-center justify-center py-8">
-          <div className="text-6xl text-primary mb-6">
-            <span className="material-icons" style={{ fontSize: '6rem' }}>music_note</span>
-          </div>
-          <p className="mb-4 font-medium">{file.name}</p>
-          <audio
-            src={previewUrl}
-            controls
-            className="w-full max-w-md"
-          >
-            Your browser does not support the audio tag.
-          </audio>
-        </div>
-      );
-    }
-    
-    // Default fallback
-    return (
-      <div className="flex flex-col items-center justify-center h-80">
-        <div className="mb-6 text-6xl text-primary">
-          <span className="material-icons" style={{ fontSize: '6rem' }}>{getFileIcon(file.mimeType)}</span>
-        </div>
-        <p className="text-muted-foreground mb-2">No preview available for this file type</p>
-        <Button variant="outline" onClick={handleDownload} className="mt-4">
-          <Download className="mr-2 h-4 w-4" /> Download Instead
-        </Button>
-      </div>
-    );
-  };
-
+  const formattedSize = formatFileSize(file.size);
+  
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="flex items-center space-x-2 truncate">
-            {file && (
-              <>
-                <span className="material-icons text-primary mr-2">
-                  {getFileIcon(file.mimeType)}
-                </span>
-                <span className="truncate">{file.name}</span>
-              </>
-            )}
-          </DialogTitle>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl w-full h-[80vh] flex flex-col p-0">
+        <DialogHeader className="p-4 border-b">
+          <div className="flex items-center space-x-3">
+            <FileTypeIcon mimeType={file.mimeType} size="medium" />
+            <div>
+              <DialogTitle className="text-lg font-semibold text-foreground">{file.name}</DialogTitle>
+              <div className="text-xs mt-1 text-muted-foreground">
+                {formattedSize} • Modified: {formattedDate}
+              </div>
+            </div>
+          </div>
         </DialogHeader>
         
-        <div className="flex-1 overflow-auto">
-          {renderPreviewContent()}
+        <div className="flex-1 overflow-auto p-0 bg-muted/30">
+          {isLoading ? (
+            <div className="flex items-center justify-center w-full h-full">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="mt-2 text-sm text-muted-foreground">Loading preview...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center w-full h-full">
+              <div className="text-center p-6 max-w-md">
+                <div className="text-destructive mb-2">
+                  <span className="material-icons text-4xl">error_outline</span>
+                </div>
+                <p className="text-destructive font-medium">{error}</p>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Try downloading the file to view its contents.
+                </p>
+                <div className="mt-6">
+                  <a 
+                    href={`/api/drive/files/${file.id}/download?filename=${encodeURIComponent(file.name)}`}
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+                    download={file.name}
+                  >
+                    Download File
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {isImage && previewContent && (
+                <div className="flex items-center justify-center w-full h-full p-4">
+                  <img 
+                    src={previewContent} 
+                    alt={file.name} 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+              )}
+              
+              {isText && previewContent && (
+                <pre className="p-4 text-sm overflow-auto font-mono bg-card w-full h-full whitespace-pre-wrap">
+                  {previewContent}
+                </pre>
+              )}
+              
+              {isPdf && (
+                <div className="w-full h-full">
+                  <iframe 
+                    src={`/api/drive/files/${file.id}/content`}
+                    className="w-full h-full border-0"
+                    title={file.name}
+                  />
+                </div>
+              )}
+              
+              {isVideo && (
+                <div className="flex items-center justify-center w-full h-full bg-black">
+                  <video 
+                    controls 
+                    className="max-w-full max-h-full"
+                    src={`/api/drive/files/${file.id}/content`}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              )}
+              
+              {isAudio && (
+                <div className="flex items-center justify-center w-full h-full p-8">
+                  <div className="w-full max-w-lg">
+                    <div className="mb-8 text-center">
+                      <FileTypeIcon mimeType={file.mimeType} size="large" />
+                      <h3 className="mt-4 text-lg font-medium">{file.name}</h3>
+                    </div>
+                    <audio 
+                      controls 
+                      className="w-full"
+                      src={`/api/drive/files/${file.id}/content`}
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                </div>
+              )}
+              
+              {!isImage && !isText && !isPdf && !isVideo && !isAudio && (
+                <div className="flex items-center justify-center w-full h-full">
+                  <div className="text-center p-6 max-w-md">
+                    <FileTypeIcon mimeType={file.mimeType} size="large" />
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      Preview not available for this file type.
+                    </p>
+                    <div className="mt-6">
+                      <a 
+                        href={`/api/drive/files/${file.id}/download?filename=${encodeURIComponent(file.name)}`}
+                        className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+                        download={file.name}
+                      >
+                        Download File
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
         
-        <DialogFooter className="flex justify-between items-center border-t pt-4 mt-4">
-          <div className="flex items-center text-sm text-muted-foreground">
-            {file && <span>{file.mimeType}</span>}
+        <div className="p-3 border-t flex justify-end">
+          <div className="space-x-2">
+            <a 
+              href={`/api/drive/files/${file.id}/download?filename=${encodeURIComponent(file.name)}`}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary hover:text-primary-foreground hover:bg-primary border border-border rounded-md transition-colors"
+              download={file.name}
+            >
+              <span className="material-icons mr-2 text-sm">download</span>
+              Download
+            </a>
+            
+            <a 
+              href={file.webViewLink || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary hover:text-primary-foreground hover:bg-primary border border-border rounded-md transition-colors"
+            >
+              <span className="material-icons mr-2 text-sm">open_in_new</span>
+              Open in Drive
+            </a>
           </div>
-          <div className="flex space-x-2">
-            {file?.webViewLink && !isTextFile(file.mimeType) && !file.mimeType.startsWith("image/") && (
-              <Button variant="outline" onClick={openInNewTab}>
-                <ExternalLink className="mr-2 h-4 w-4" /> Open in Google
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" /> Download
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
-              <X className="mr-2 h-4 w-4" /> Close
-            </Button>
-          </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -191,6 +191,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Endpoint for file download with custom filename
+  app.get("/api/drive/files/:fileId/download", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = req.params.fileId;
+      const filename = req.query.filename || '';
+      const file = await googleDriveService.getFile(req.user, fileId);
+      
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename || file.name}"`,
+      );
+      res.setHeader(
+        "Content-Type",
+        file.mimeType || "application/octet-stream",
+      );
+      
+      const fileStream = await googleDriveService.downloadFile(
+        req.user,
+        fileId,
+      );
+      fileStream.pipe(res);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
+  
   // Get file content for preview
   app.get("/api/drive/files/:fileId/content", isAuthenticated, async (req, res) => {
     try {

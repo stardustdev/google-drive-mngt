@@ -86,14 +86,14 @@ export const FolderNavigation = ({
   };
 
   return (
-    <div className="flex items-center p-2 bg-background/60 rounded-md border mb-4 overflow-x-auto">
+    <div className="flex items-center p-2 bg-background/60 rounded-md border overflow-x-auto">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-1 shrink-0"
+              className="flex items-center gap-1 shrink-0 btn-theme-primary"
               onClick={handleNavigateToRoot}
               disabled={isLoading}
             >

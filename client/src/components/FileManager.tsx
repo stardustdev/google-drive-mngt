@@ -107,7 +107,7 @@ const FileManager: FC = () => {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Top Bar with Actions */}
-      <div className="bg-background border-b border-border px-4 md:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-background border-b border-border py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
           <h2 className="text-lg font-medium text-foreground">
             {currentFolderId ? "Folder Contents" : "My Files"}
@@ -172,7 +172,7 @@ const FileManager: FC = () => {
       
       {/* Folder Navigation and Storage */}
       {user && (
-        <div className="px-4 md:px-8 pt-4">
+        <div className="pt-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <FolderNavigation 
               currentFolderId={currentFolderId} 
@@ -185,7 +185,7 @@ const FileManager: FC = () => {
       )}
       
       {/* File List Container */}
-      <div className="flex-1 overflow-auto p-4 md:p-8 pt-0">
+      <div className="flex-1 overflow-auto pt-4">
         {isLoading ? (
           <LoadingState />
         ) : isError ? (

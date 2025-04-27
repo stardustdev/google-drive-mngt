@@ -36,13 +36,22 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
           Open Folder
         </button>
       ) : (
-        <button 
-          className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
-          onClick={handleDownload}
-        >
-          <span className="material-icons mr-3">download</span>
-          Download
-        </button>
+        <>
+          <button 
+            className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
+            onClick={() => onAction('preview')}
+          >
+            <span className="material-icons mr-3">visibility</span>
+            Preview
+          </button>
+          <button 
+            className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
+            onClick={handleDownload}
+          >
+            <span className="material-icons mr-3">download</span>
+            Download
+          </button>
+        </>
       )}
       
       <a 

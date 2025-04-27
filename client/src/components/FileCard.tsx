@@ -49,10 +49,20 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
     }
   };
   
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isFolder) {
+      onAction('open-folder', file);
+    } else {
+      onAction('preview', file);
+    }
+  };
+  
   return (
     <div 
-      className={`bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-all hover:border-primary ${isFolder ? 'cursor-pointer' : ''}`}
+      className={`bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-all hover:border-primary ${isFolder ? 'cursor-pointer' : 'cursor-pointer'}`}
       onClick={handleCardClick}
+      onDoubleClick={handleDoubleClick}
     >
       {/* Thumbnail Area */}
       <div className="h-40 bg-muted flex items-center justify-center border-b border-border p-4">

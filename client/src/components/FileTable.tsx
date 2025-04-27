@@ -75,10 +75,20 @@ const FileTableRow: FC<FileTableRowProps> = ({ file, onAction }) => {
     }
   };
   
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isFolder) {
+      onAction('open-folder', file);
+    } else {
+      onAction('preview', file);
+    }
+  };
+  
   return (
     <tr 
-      className={`border-b border-border hover:bg-muted/30 ${isFolder ? 'cursor-pointer' : ''}`}
+      className={`border-b border-border hover:bg-muted/30 ${isFolder ? 'cursor-pointer' : 'cursor-pointer'}`}
       onClick={handleRowClick}
+      onDoubleClick={handleDoubleClick}
     >
       <td className="py-3 px-4">
         <div className="flex items-center space-x-3">

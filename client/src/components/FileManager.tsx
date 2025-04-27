@@ -105,6 +105,9 @@ const FileManager: FC = () => {
       case 'share':
         handleShareFile(file);
         break;
+      case 'preview':
+        handlePreviewFile(file);
+        break;
       case 'open-folder':
         if (file.mimeType === 'application/vnd.google-apps.folder') {
           setCurrentFolderId(file.id);
@@ -271,6 +274,12 @@ const FileManager: FC = () => {
       <ShareFileModal
         isOpen={isShareFileModalOpen}
         onClose={() => setIsShareFileModalOpen(false)}
+        file={selectedFile}
+      />
+
+      <FilePreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
         file={selectedFile}
       />
     </div>

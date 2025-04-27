@@ -12,14 +12,14 @@ interface FileTableProps {
 
 const FileTable: FC<FileTableProps> = ({ files, onAction }) => {
   return (
-    <div className="w-full overflow-auto">
+    <div className="w-full overflow-auto rounded-md border border-border">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-muted/50">
-            <th className="py-2 px-4 text-left text-sm font-medium text-muted-foreground">Name</th>
-            <th className="py-2 px-4 text-left text-sm font-medium text-muted-foreground">Modified</th>
-            <th className="py-2 px-4 text-left text-sm font-medium text-muted-foreground">Size</th>
-            <th className="py-2 px-4 text-right text-sm font-medium text-muted-foreground w-[60px]">Actions</th>
+          <tr className="bg-muted/50 border-b border-border">
+            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">Name</th>
+            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">Modified</th>
+            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">Size</th>
+            <th className="py-3 px-4 text-right text-sm font-medium text-foreground w-[60px]">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -82,10 +82,10 @@ const FileTableRow: FC<FileTableRowProps> = ({ file, onAction }) => {
     >
       <td className="py-3 px-4">
         <div className="flex items-center space-x-3">
-          <div className={isFolder ? 'text-blue-500' : ''}>
+          <div className={isFolder ? 'text-primary' : ''}>
             <FileTypeIcon mimeType={file.mimeType} size="small" />
           </div>
-          <span className="font-medium truncate max-w-[200px] inline-block" title={file.name}>
+          <span className="font-medium truncate max-w-[300px] inline-block" title={file.name}>
             {file.name}
           </span>
         </div>
@@ -95,7 +95,7 @@ const FileTableRow: FC<FileTableRowProps> = ({ file, onAction }) => {
       <td className="py-3 px-4 text-right">
         <div className="relative inline-block" ref={menuRef}>
           <button 
-            className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
+            className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors btn-theme-primary"
             onClick={handleMenuToggle}
           >
             <span className="material-icons text-lg">more_vert</span>

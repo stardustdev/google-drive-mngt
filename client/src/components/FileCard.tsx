@@ -51,7 +51,7 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
   
   return (
     <div 
-      className={`bg-card rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow ${isFolder ? 'cursor-pointer' : ''}`}
+      className={`bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-all hover:border-primary ${isFolder ? 'cursor-pointer' : ''}`}
       onClick={handleCardClick}
     >
       {/* Thumbnail Area */}
@@ -63,19 +63,19 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
             className="max-h-full object-contain"
           />
         ) : (
-          <div className={`${isFolder ? 'text-blue-500' : ''}`}>
+          <div className={`${isFolder ? 'text-primary' : ''}`}>
             <FileTypeIcon mimeType={file.mimeType} size="large" />
           </div>
         )}
       </div>
       
       {/* File Info */}
-      <div className="p-3">
+      <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="overflow-hidden">
             <h3 className="font-medium truncate text-foreground" title={file.name}>
               {isFolder && (
-                <span className="material-icons mr-1 text-blue-500 align-text-bottom" style={{ fontSize: '1.1rem' }}>
+                <span className="material-icons mr-1 text-primary align-text-bottom" style={{ fontSize: '1.1rem' }}>
                   folder
                 </span>
               )}
@@ -90,7 +90,7 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
           {/* File Actions */}
           <div className="relative" ref={menuRef}>
             <button 
-              className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors btn-theme-primary"
               onClick={handleMenuToggle}
             >
               <span className="material-icons">more_vert</span>

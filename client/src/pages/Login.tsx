@@ -66,15 +66,15 @@ const Login: FC = () => {
           </TabsList>
           
           <TabsContent value="login">
-            <Card className="border-border">
-              <CardHeader className="space-y-1">
+            <Card className="border-border shadow-md">
+              <CardHeader className="space-y-2">
                 <div className="flex items-center justify-center mb-6">
                   <img 
                     src="https://www.gstatic.com/images/branding/product/1x/drive_48dp.png" 
                     alt="Google Drive logo" 
                     className="w-12 h-12 mr-4" 
                   />
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Google Drive</h1>
+                  <h1 className="text-2xl font-bold tracking-tight text-primary">Drive Manager</h1>
                 </div>
                 <CardTitle className="text-xl text-center">Sign in</CardTitle>
                 <CardDescription className="text-center">
@@ -83,7 +83,7 @@ const Login: FC = () => {
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 <Button 
-                  className="flex items-center justify-center w-full bg-google-blue hover:bg-blue-600 space-x-2 text-primary hover:text-white"
+                  className="flex items-center justify-center w-full space-x-2 btn-theme-filled"
                   onClick={handleLogin}
                   disabled={isLoading}
                 >
@@ -104,7 +104,7 @@ const Login: FC = () => {
           </TabsContent>
           
           <TabsContent value="help">
-            <Card>
+            <Card className="border-border shadow-md">
               <CardHeader>
                 <CardTitle>Authentication Help</CardTitle>
                 <CardDescription>
@@ -139,7 +139,7 @@ const Login: FC = () => {
                       This error occurs when the redirect URI in your Google OAuth configuration doesn't match what the app is using.
                     </p>
                     <ol className="list-decimal list-inside space-y-2 text-sm">
-                      <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a></li>
+                      <li>Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Cloud Console</a></li>
                       <li>Select your project and find the OAuth 2.0 Client ID you're using</li>
                       <li>Add the following URL to the list of authorized redirect URIs:
                         <div className="bg-muted p-2 mt-1 rounded-md overflow-x-auto text-xs">
@@ -173,7 +173,7 @@ const Login: FC = () => {
                 <div className="flex space-x-2">
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full btn-theme-primary"
                     onClick={() => setActiveTab("login")}
                   >
                     <span className="material-icons mr-2">arrow_back</span>
@@ -181,7 +181,7 @@ const Login: FC = () => {
                   </Button>
                   <Button 
                     variant="default"
-                    className="w-full bg-google-blue hover:bg-blue-600"
+                    className="w-full btn-theme-filled"
                     onClick={() => window.location.reload()}
                   >
                     <span className="material-icons mr-2">refresh</span>

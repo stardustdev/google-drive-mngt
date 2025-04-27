@@ -15,15 +15,15 @@ const AuthLayout: FC<AuthLayoutProps> = ({ children, requireAuth = true }) => {
     if (!isLoading) {
       // If auth is required but user is not authenticated, redirect to login
       if (requireAuth && !isAuthenticated && location !== "/login") {
-        setLocation("/login");
+        window.location.href = "/login";
       }
       
       // If user is authenticated and trying to access login page, redirect to home
       if (isAuthenticated && location === "/login") {
-        setLocation("/");
+        window.location.href = "/";
       }
     }
-  }, [isAuthenticated, isLoading, location, setLocation, requireAuth]);
+  }, [isAuthenticated, isLoading, location, requireAuth]);
 
   if (isLoading) {
     return (

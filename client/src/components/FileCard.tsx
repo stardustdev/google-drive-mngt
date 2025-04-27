@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import FileTypeIcon from "./FileTypeIcon";
 import FileActionsMenu from "./FileActionsMenu";
 import { DriveFile } from "@/lib/types";
+import { formatFileSize } from "@/lib/fileUtils";
 
 interface FileCardProps {
   file: DriveFile;
@@ -17,6 +18,9 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
   const formattedDate = file.modifiedTime 
     ? format(new Date(file.modifiedTime), "MMM d, yyyy")
     : "Unknown date";
+  
+  // Format the file size
+  const formattedSize = formatFileSize(file.size);
   
   // Determine if file is an image or folder
   const isImage = file.mimeType?.startsWith("image/");
@@ -78,6 +82,9 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
               {file.name}
             </h3>
             <p className="text-sm text-muted-foreground mt-1">Modified: {formattedDate}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isFolder ? 'Folder' : formattedSize}
+            </p>
           </div>
           
           {/* File Actions */}

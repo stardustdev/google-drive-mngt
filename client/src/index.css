@@ -57,3 +57,21 @@
   }
 }
 
+@layer components {
+  .btn-theme-primary {
+    @apply bg-transparent text-primary border border-primary hover:bg-primary hover:text-primary-foreground transition-colors;
+  }
+  
+  .btn-theme-secondary {
+    @apply bg-transparent text-muted-foreground border border-muted hover:bg-muted hover:text-muted-foreground transition-colors;
+  }
+
+  .btn-theme-accent {
+    @apply bg-transparent text-accent-foreground border border-accent hover:bg-accent hover:text-accent-foreground transition-colors;
+  }
+  
+  .btn-theme-filled {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors;
+  }
+}
+

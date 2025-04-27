@@ -95,7 +95,7 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
         ) : !user ? (
           <button
             onClick={handleLogin}
-            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md"
+            className="flex items-center space-x-2 btn-theme-filled px-4 py-2 rounded-md"
           >
             <span className="material-icons">login</span>
             <span>Login with Google</span>
@@ -104,7 +104,7 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center space-x-2 hover:bg-muted rounded-full p-1"
+              className="flex items-center space-x-2 hover:bg-accent hover:text-accent-foreground transition-colors rounded-full p-1"
             >
               <img
                 src={
@@ -128,7 +128,7 @@ const Header: FC<HeaderProps> = ({ toggleSidebar }) => {
                 <div className="border-t border-border"></div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left block px-4 py-2 text-sm text-primary hover:text-white hover:bg-primary"
+                  className="w-full text-left block px-4 py-2 text-sm btn-theme-primary rounded-none"
                 >
                   Sign out
                 </button>

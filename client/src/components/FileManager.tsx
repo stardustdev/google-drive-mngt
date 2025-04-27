@@ -119,7 +119,7 @@ const FileManager: FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 text-primary hover:text-white"
+            className="flex items-center gap-1 btn-theme-primary"
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
@@ -132,7 +132,7 @@ const FileManager: FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 text-primary hover:text-white"
+            className="flex items-center gap-1 btn-theme-primary"
             onClick={handleOpenCreateFolderModal}
           >
             <FolderPlus size={16} />
@@ -142,7 +142,7 @@ const FileManager: FC = () => {
           <Button
             variant="default"
             size="sm"
-            className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-white"
+            className="flex items-center gap-1 btn-theme-filled"
             onClick={handleOpenUploadModal}
           >
             <UploadCloud size={16} />
@@ -153,7 +153,7 @@ const FileManager: FC = () => {
             <Button
               variant={viewMode === 'list' ? "secondary" : "ghost"}
               size="icon"
-              className="text-primary hover:text-white"
+              className={viewMode === 'list' ? "btn-theme-secondary" : "btn-theme-primary"}
               onClick={() => setViewMode('list')}
             >
               <List size={16} />
@@ -161,7 +161,7 @@ const FileManager: FC = () => {
             <Button
               variant={viewMode === 'grid' ? "secondary" : "ghost"}
               size="icon"
-              className="text-primary hover:text-white"
+              className={viewMode === 'grid' ? "btn-theme-secondary" : "btn-theme-primary"}
               onClick={() => setViewMode('grid')}
             >
               <Grid size={16} />

@@ -10,6 +10,7 @@ import UploadModal from "./UploadModal";
 import DeleteModal from "./DeleteModal";
 import { CreateFolderModal } from "./CreateFolderModal";
 import { MoveFileModal } from "./MoveFileModal";
+import { ShareFileModal } from "./ShareFileModal";
 import { FolderNavigation } from "./FolderNavigation";
 import { SearchFiles } from "./SearchFiles";
 import { DriveFile } from "@/lib/types";
@@ -40,6 +41,7 @@ const FileManager: FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isMoveFileModalOpen, setIsMoveFileModalOpen] = useState(false);
+  const [isShareFileModalOpen, setIsShareFileModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -66,6 +68,11 @@ const FileManager: FC = () => {
     setSelectedFile(file);
     setIsMoveFileModalOpen(true);
   };
+  
+  const handleShareFile = (file: DriveFile) => {
+    setSelectedFile(file);
+    setIsShareFileModalOpen(true);
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -80,6 +87,9 @@ const FileManager: FC = () => {
         break;
       case 'move':
         handleMoveFile(file);
+        break;
+      case 'share':
+        handleShareFile(file);
         break;
       case 'open-folder':
         if (file.mimeType === 'application/vnd.google-apps.folder') {
@@ -236,6 +246,12 @@ const FileManager: FC = () => {
           setIsMoveFileModalOpen(false);
           refetch();
         }}
+      />
+      
+      <ShareFileModal
+        isOpen={isShareFileModalOpen}
+        onClose={() => setIsShareFileModalOpen(false)}
+        file={selectedFile}
       />
     </div>
   );

@@ -56,7 +56,7 @@ export const SearchFiles = ({ onFileAction }: SearchFilesProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="outline" size="sm" className="flex items-center gap-1 btn-theme-primary">
           <Search className="h-5 w-5" />
         </Button>
       </DialogTrigger>

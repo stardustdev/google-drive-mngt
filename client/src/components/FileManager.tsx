@@ -163,23 +163,29 @@ const FileManager: FC = () => {
             <span>Upload</span>
           </Button>
           
-          <div className="hidden md:flex items-center space-x-1">
-            <Button
-              variant={viewMode === 'list' ? "secondary" : "ghost"}
-              size="icon"
-              className={viewMode === 'list' ? "btn-theme-secondary" : "btn-theme-primary"}
+          <div className="hidden md:flex items-center border rounded-md overflow-hidden">
+            <button
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-transparent text-muted-foreground hover:text-foreground'
+              }`}
               onClick={() => setViewMode('list')}
             >
-              <List size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? "secondary" : "ghost"}
-              size="icon"
-              className={viewMode === 'grid' ? "btn-theme-secondary" : "btn-theme-primary"}
+              <List size={15} />
+              <span>List</span>
+            </button>
+            <button
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${
+                viewMode === 'grid' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-transparent text-muted-foreground hover:text-foreground'
+              }`}
               onClick={() => setViewMode('grid')}
             >
-              <Grid size={16} />
-            </Button>
+              <Grid size={15} />
+              <span>Grid</span>
+            </button>
           </div>
         </div>
       </div>
@@ -193,7 +199,33 @@ const FileManager: FC = () => {
               onNavigate={handleNavigateToFolder} 
             />
             
-            <StorageUsage />
+            <div className="flex items-center justify-between gap-2">
+              <div className="md:hidden flex items-center border rounded-md overflow-hidden">
+                <button
+                  className={`flex items-center gap-1 px-2 py-1 text-xs font-medium transition-colors ${
+                    viewMode === 'list' 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setViewMode('list')}
+                >
+                  <List size={14} />
+                  <span>List</span>
+                </button>
+                <button
+                  className={`flex items-center gap-1 px-2 py-1 text-xs font-medium transition-colors ${
+                    viewMode === 'grid' 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid size={14} />
+                  <span>Grid</span>
+                </button>
+              </div>
+              <StorageUsage />
+            </div>
           </div>
         </div>
       )}

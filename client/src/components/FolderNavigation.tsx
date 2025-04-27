@@ -60,15 +60,45 @@ export const FolderNavigation = ({
       }
     };
 
+    // Function to build the full breadcrumb path recursively
+    const buildBreadcrumbPath = async (folderId: string, path: BreadcrumbItem[] = []) => {
+      const folder = await fetchFolderDetails(folderId);
+      
+      if (!folder) return path;
+      
+      // Add current folder to the beginning of the path
+      const updatedPath = [{ id: folder.id, name: folder.name }, ...path];
+      
+      // If the folder has a parent, recursively build the path
+      if (folder.parents && folder.parents.length > 0) {
+        // Check if it's not the root folder ("My Drive" folder is usually the root)
+        const parentId = folder.parents[0];
+        
+        // If we detect a loop (perhaps due to API peculiarities), stop recursion
+        if (path.some(item => item.id === parentId)) {
+          return updatedPath;
+        }
+        
+        return await buildBreadcrumbPath(parentId, updatedPath);
+      }
+      
+      return updatedPath;
+    };
+
     // Function to build breadcrumb path
     const buildBreadcrumbs = async () => {
       setIsLoading(true);
       
       try {
-        const folder = await fetchFolderDetails(currentFolderId);
-        if (folder) {
-          setBreadcrumbs([{ id: folder.id, name: folder.name }]);
-        }
+        const crumbs = await buildBreadcrumbPath(currentFolderId);
+        setBreadcrumbs(crumbs);
+      } catch (error) {
+        console.error("Error building breadcrumbs:", error);
+        toast({
+          title: "Error",
+          description: "Could not build folder path",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -107,16 +137,32 @@ export const FolderNavigation = ({
         </Tooltip>
       </TooltipProvider>
       
-      {breadcrumbs.length > 0 && (
-        <>
+      {breadcrumbs.length > 0 && breadcrumbs.map((item, index) => (
+        <div key={item.id} className="flex items-center">
           <ChevronRight size={16} className="mx-1 text-muted-foreground shrink-0" />
-          <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`flex items-center gap-1 p-1 h-auto shrink-0 ${
+              index === breadcrumbs.length - 1 
+                ? "font-medium text-foreground" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => handleNavigateToFolder(item.id)}
+            disabled={isLoading}
+          >
             <Folder size={16} className="mr-1 text-blue-500 shrink-0" />
-            <span className="truncate max-w-[200px]" title={breadcrumbs[0]?.name}>
-              {breadcrumbs[0]?.name}
+            <span className="truncate max-w-[150px]" title={item.name}>
+              {item.name}
             </span>
-          </div>
-        </>
+          </Button>
+        </div>
+      ))}
+      
+      {isLoading && (
+        <div className="ml-2 text-xs text-muted-foreground animate-pulse">
+          Loading path...
+        </div>
       )}
     </div>
   );

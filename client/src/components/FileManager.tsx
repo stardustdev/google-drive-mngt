@@ -18,29 +18,27 @@ import { StorageUsage } from "./StorageUsage";
 import { DriveFile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { 
-  UploadCloud, 
-  FolderPlus, 
-  Grid, 
-  List, 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  UploadCloud,
+  FolderPlus,
+  Grid,
+  List,
   RefreshCw,
   FolderOpen,
-  Eye
+  Eye,
 } from "lucide-react";
 
 const FileManager: FC = () => {
   const { user } = useGoogleAuth();
-  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined);
-  const { 
-    files, 
-    isLoading, 
-    isError, 
-    error, 
-    refetch 
-  } = useFiles(currentFolderId);
-  
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(
+    undefined,
+  );
+  const { files, isLoading, isError, error, refetch } =
+    useFiles(currentFolderId);
+
   // We'll use the StorageUsage component instead of fetching storage info here
-  
+
   // Modal states
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -49,7 +47,7 @@ const FileManager: FC = () => {
   const [isShareFileModalOpen, setIsShareFileModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<DriveFile | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Handlers
@@ -74,16 +72,16 @@ const FileManager: FC = () => {
     setSelectedFile(file);
     setIsMoveFileModalOpen(true);
   };
-  
+
   const handleShareFile = (file: DriveFile) => {
     setSelectedFile(file);
     setIsShareFileModalOpen(true);
   };
-  
+
   const handlePreviewFile = (file: DriveFile) => {
     // Don't allow preview for folders
-    if (file.mimeType === 'application/vnd.google-apps.folder') return;
-    
+    if (file.mimeType === "application/vnd.google-apps.folder") return;
+
     setSelectedFile(file);
     setIsPreviewModalOpen(true);
   };
@@ -96,20 +94,20 @@ const FileManager: FC = () => {
 
   const handleFileAction = (action: string, file: DriveFile) => {
     switch (action) {
-      case 'delete':
+      case "delete":
         handleDeleteFile(file);
         break;
-      case 'move':
+      case "move":
         handleMoveFile(file);
         break;
-      case 'share':
+      case "share":
         handleShareFile(file);
         break;
-      case 'preview':
+      case "preview":
         handlePreviewFile(file);
         break;
-      case 'open-folder':
-        if (file.mimeType === 'application/vnd.google-apps.folder') {
+      case "open-folder":
+        if (file.mimeType === "application/vnd.google-apps.folder") {
           setCurrentFolderId(file.id);
         }
         break;
@@ -126,9 +124,13 @@ const FileManager: FC = () => {
           <h2 className="text-lg font-medium text-foreground">
             {currentFolderId ? "Folder Contents" : "My Files"}
           </h2>
-          {files && <div className="text-sm text-muted-foreground">({files.length} items)</div>}
+          {files && (
+            <div className="text-sm text-muted-foreground">
+              ({files.length} items)
+            </div>
+          )}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -137,12 +139,15 @@ const FileManager: FC = () => {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+            <RefreshCw
+              size={16}
+              className={isRefreshing ? "animate-spin" : ""}
+            />
             <span className="hidden md:inline">Refresh</span>
           </Button>
-          
+
           <SearchFiles onFileAction={handleFileAction} />
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -152,7 +157,7 @@ const FileManager: FC = () => {
             <FolderPlus size={16} />
             <span className="hidden md:inline">New Folder</span>
           </Button>
-          
+
           <Button
             variant="default"
             size="sm"
@@ -162,137 +167,124 @@ const FileManager: FC = () => {
             <UploadCloud size={16} />
             <span>Upload</span>
           </Button>
-          
-          <div className="hidden md:flex items-center border rounded-md overflow-hidden">
-            <button
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-transparent text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setViewMode('list')}
+
+          <div className="hidden md:block">
+            <Tabs 
+              defaultValue="list" 
+              value={viewMode}
+              onValueChange={(value) => setViewMode(value as "list" | "grid")}
+              className="w-[200px]"
             >
-              <List size={15} />
-              <span>List</span>
-            </button>
-            <button
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-transparent text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid size={15} />
-              <span>Grid</span>
-            </button>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="list" className="flex items-center gap-2">
+                  <List size={15} />
+                  <span>List</span>
+                </TabsTrigger>
+                <TabsTrigger value="grid" className="flex items-center gap-2">
+                  <Grid size={15} />
+                  <span>Grid</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
       </div>
-      
+
       {/* Folder Navigation and Storage */}
       {user && (
         <div className="pt-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <FolderNavigation 
-              currentFolderId={currentFolderId} 
-              onNavigate={handleNavigateToFolder} 
+            <FolderNavigation
+              currentFolderId={currentFolderId}
+              onNavigate={handleNavigateToFolder}
             />
-            
+
             <div className="flex items-center justify-between gap-2">
-              <div className="md:hidden flex items-center border rounded-md overflow-hidden">
-                <button
-                  className={`flex items-center gap-1 px-2 py-1 text-xs font-medium transition-colors ${
-                    viewMode === 'list' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setViewMode('list')}
+              <div className="md:hidden">
+                <Tabs 
+                  defaultValue="list" 
+                  value={viewMode}
+                  onValueChange={(value) => setViewMode(value as "list" | "grid")}
+                  className="w-[160px]"
                 >
-                  <List size={14} />
-                  <span>List</span>
-                </button>
-                <button
-                  className={`flex items-center gap-1 px-2 py-1 text-xs font-medium transition-colors ${
-                    viewMode === 'grid' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid size={14} />
-                  <span>Grid</span>
-                </button>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="list" className="flex items-center gap-1">
+                      <List size={14} />
+                      <span>List</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="grid" className="flex items-center gap-1">
+                      <Grid size={14} />
+                      <span>Grid</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
               <StorageUsage />
             </div>
           </div>
         </div>
       )}
-      
+
       {/* File List Container */}
       <div className="flex-1 overflow-auto pt-4">
         {isLoading ? (
           <LoadingState />
         ) : isError ? (
-          <ErrorState 
-            message={(error as Error)?.message || "Failed to load files"} 
-            onRetry={refetch} 
+          <ErrorState
+            message={(error as Error)?.message || "Failed to load files"}
+            onRetry={refetch}
           />
         ) : !user ? (
-          <EmptyState 
-            message="Please login to view your files" 
+          <EmptyState
+            message="Please login to view your files"
             icon="account_circle"
           />
         ) : files?.length === 0 ? (
-          <EmptyState 
-            message={currentFolderId 
-              ? "This folder is empty" 
-              : "Upload files to your Google Drive to see them here"
-            } 
+          <EmptyState
+            message={
+              currentFolderId
+                ? "This folder is empty"
+                : "Upload files to your Google Drive to see them here"
+            }
             icon="folder_open"
             onUploadClick={handleOpenUploadModal}
           />
-        ) : viewMode === 'list' ? (
+        ) : viewMode === "list" ? (
           <FileTable files={files || []} onAction={handleFileAction} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {files?.map((file) => (
-              <FileCard 
-                key={file.id} 
-                file={file} 
-                onAction={handleFileAction} 
-              />
+              <FileCard key={file.id} file={file} onAction={handleFileAction} />
             ))}
           </div>
         )}
       </div>
 
       {/* Modals */}
-      <UploadModal 
-        isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)} 
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
         onUploadComplete={() => refetch()}
         parentFolderId={currentFolderId}
       />
 
-      <DeleteModal 
-        isOpen={isDeleteModalOpen} 
-        onClose={() => setIsDeleteModalOpen(false)} 
-        file={selectedFile} 
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        file={selectedFile}
         onDeleteComplete={() => {
           setIsDeleteModalOpen(false);
           refetch();
         }}
       />
-      
+
       <CreateFolderModal
         isOpen={isCreateFolderModalOpen}
         onClose={() => setIsCreateFolderModalOpen(false)}
         parentFolderId={currentFolderId}
         onCreateComplete={() => refetch()}
       />
-      
+
       <MoveFileModal
         isOpen={isMoveFileModalOpen}
         onClose={() => setIsMoveFileModalOpen(false)}
@@ -302,7 +294,7 @@ const FileManager: FC = () => {
           refetch();
         }}
       />
-      
+
       <ShareFileModal
         isOpen={isShareFileModalOpen}
         onClose={() => setIsShareFileModalOpen(false)}

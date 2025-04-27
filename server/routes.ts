@@ -326,6 +326,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
+  
+  // Get Google Drive storage usage
+  app.get("/api/drive/storage", isAuthenticated, async (req, res) => {
+    try {
+      const storageInfo = await googleDriveService.getStorageUsage(req.user);
+      res.json(storageInfo);
+    } catch (error) {
+      res.status(500).json({ message: (error as Error).message });
+    }
+  });
 
   const httpServer = createServer(app);
 

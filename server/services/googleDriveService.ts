@@ -431,6 +431,62 @@ class GoogleDriveService {
       throw error;
     }
   }
+  
+  /**
+   * Get the storage usage information for the user's Google Drive
+   * @param user The authenticated user
+   * @returns Storage usage information
+   */
+  async getStorageUsage(user: GoogleUser): Promise<{ 
+    usage: number; 
+    limit: number; 
+    usageInDrive: number;
+    usageInTrash: number;
+    formattedUsage: string;
+    formattedLimit: string;
+    usagePercentage: number;
+  }> {
+    try {
+      const freshUser = await googleAuthService.refreshTokenIfNeeded(user);
+      
+      const response = await axios.get('https://www.googleapis.com/drive/v3/about', {
+        headers: {
+          Authorization: `Bearer ${freshUser.accessToken}`,
+        },
+        params: {
+          fields: 'storageQuota,user'
+        }
+      });
+      
+      const { storageQuota } = response.data;
+      const usage = parseInt(storageQuota.usage || '0');
+      const limit = parseInt(storageQuota.limit || '0');
+      const usageInDrive = parseInt(storageQuota.usageInDrive || '0');
+      const usageInTrash = parseInt(storageQuota.usageInTrash || '0');
+      
+      // Format the values for display
+      const formatBytes = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      };
+      
+      return {
+        usage,
+        limit,
+        usageInDrive,
+        usageInTrash,
+        formattedUsage: formatBytes(usage),
+        formattedLimit: formatBytes(limit),
+        usagePercentage: Math.round((usage / limit) * 100)
+      };
+    } catch (error) {
+      console.error("Error getting storage usage:", error);
+      throw error;
+    }
+  }
 }
 
 export const googleDriveService = new GoogleDriveService();

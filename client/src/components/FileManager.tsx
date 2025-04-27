@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useFiles } from "@/hooks/useFiles";
+import { useStorageInfo } from "@/hooks/useStorageInfo";
 import FileCard from "./FileCard";
 import FileTable from "./FileTable";
 import LoadingState from "./LoadingState";
@@ -16,13 +17,15 @@ import { SearchFiles } from "./SearchFiles";
 import { DriveFile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { 
   UploadCloud, 
   FolderPlus, 
   Grid, 
   List, 
   RefreshCw,
-  FolderOpen
+  FolderOpen,
+  HardDrive
 } from "lucide-react";
 
 const FileManager: FC = () => {
@@ -35,6 +38,11 @@ const FileManager: FC = () => {
     error, 
     refetch 
   } = useFiles(currentFolderId);
+  
+  const {
+    storageInfo,
+    isLoading: isLoadingStorage
+  } = useStorageInfo();
   
   // Modal states
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -116,7 +124,7 @@ const FileManager: FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 text-primary hover:text-white"
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
@@ -129,7 +137,7 @@ const FileManager: FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 text-primary hover:text-white"
             onClick={handleOpenCreateFolderModal}
           >
             <FolderPlus size={16} />
@@ -139,7 +147,7 @@ const FileManager: FC = () => {
           <Button
             variant="default"
             size="sm"
-            className="flex items-center gap-1 bg-google-blue hover:bg-blue-600"
+            className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-white"
             onClick={handleOpenUploadModal}
           >
             <UploadCloud size={16} />
@@ -150,6 +158,7 @@ const FileManager: FC = () => {
             <Button
               variant={viewMode === 'list' ? "secondary" : "ghost"}
               size="icon"
+              className="text-primary hover:text-white"
               onClick={() => setViewMode('list')}
             >
               <List size={16} />
@@ -157,6 +166,7 @@ const FileManager: FC = () => {
             <Button
               variant={viewMode === 'grid' ? "secondary" : "ghost"}
               size="icon"
+              className="text-primary hover:text-white"
               onClick={() => setViewMode('grid')}
             >
               <Grid size={16} />
@@ -165,13 +175,34 @@ const FileManager: FC = () => {
         </div>
       </div>
       
-      {/* Folder Navigation */}
+      {/* Folder Navigation and Storage */}
       {user && (
         <div className="px-4 md:px-8 pt-4">
-          <FolderNavigation 
-            currentFolderId={currentFolderId} 
-            onNavigate={handleNavigateToFolder} 
-          />
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <FolderNavigation 
+              currentFolderId={currentFolderId} 
+              onNavigate={handleNavigateToFolder} 
+            />
+            
+            {storageInfo && !isLoadingStorage && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <HardDrive size={16} className="text-primary" />
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1">
+                    <span>{storageInfo.formattedUsage}</span>
+                    <span>of</span>
+                    <span>{storageInfo.formattedLimit}</span>
+                    <span>used</span>
+                    <span>({storageInfo.usagePercentage}%)</span>
+                  </div>
+                  <Progress 
+                    value={storageInfo.usagePercentage} 
+                    className="h-1.5 w-full md:w-48" 
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       

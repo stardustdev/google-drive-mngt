@@ -29,18 +29,18 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
     <div className="absolute right-0 mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border transform -translate-x-full">
       {isFolder ? (
         <button 
-          className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+          className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
           onClick={() => onAction('open-folder')}
         >
-          <span className="material-icons mr-3 text-muted-foreground">folder_open</span>
+          <span className="material-icons mr-3">folder_open</span>
           Open Folder
         </button>
       ) : (
         <button 
-          className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+          className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
           onClick={handleDownload}
         >
-          <span className="material-icons mr-3 text-muted-foreground">download</span>
+          <span className="material-icons mr-3">download</span>
           Download
         </button>
       )}
@@ -49,35 +49,35 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
         href={file.webViewLink || "#"} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-muted"
+        className="flex items-center px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
       >
-        <span className="material-icons mr-3 text-muted-foreground">open_in_new</span>
+        <span className="material-icons mr-3">open_in_new</span>
         Open in Drive
       </a>
       
       <button 
-        className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+        className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
         onClick={() => onAction('share')}
       >
-        <span className="material-icons mr-3 text-muted-foreground">share</span>
+        <span className="material-icons mr-3">share</span>
         Share
       </button>
       
       <button 
-        className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-muted"
+        className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
         onClick={() => onAction('move')}
       >
-        <span className="material-icons mr-3 text-muted-foreground">drive_file_move</span>
+        <span className="material-icons mr-3">drive_file_move</span>
         Move
       </button>
       
       <div className="border-t border-border"></div>
       
       <button 
-        className="flex items-center w-full px-4 py-2 text-sm text-google-red hover:bg-muted"
+        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:text-destructive-foreground hover:bg-destructive transition-colors rounded-none"
         onClick={() => onAction('delete')}
       >
-        <span className="material-icons mr-3 text-google-red">delete</span>
+        <span className="material-icons mr-3">delete</span>
         Delete
       </button>
     </div>

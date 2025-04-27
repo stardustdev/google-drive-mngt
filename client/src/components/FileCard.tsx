@@ -90,10 +90,10 @@ const FileCard: FC<FileCardProps> = ({ file, onAction }) => {
           {/* File Actions */}
           <div className="relative" ref={menuRef}>
             <button 
-              className="p-1.5 rounded-full hover:bg-muted"
+              className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
               onClick={handleMenuToggle}
             >
-              <span className="material-icons text-muted-foreground">more_vert</span>
+              <span className="material-icons">more_vert</span>
             </button>
             
             {isMenuOpen && (

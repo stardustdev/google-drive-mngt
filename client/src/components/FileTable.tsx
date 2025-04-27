@@ -95,10 +95,10 @@ const FileTableRow: FC<FileTableRowProps> = ({ file, onAction }) => {
       <td className="py-3 px-4 text-right">
         <div className="relative inline-block" ref={menuRef}>
           <button 
-            className="p-1.5 rounded-full hover:bg-muted"
+            className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
             onClick={handleMenuToggle}
           >
-            <span className="material-icons text-muted-foreground text-lg">more_vert</span>
+            <span className="material-icons text-lg">more_vert</span>
           </button>
           
           {isMenuOpen && (

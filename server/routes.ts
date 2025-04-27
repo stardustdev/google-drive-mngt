@@ -43,6 +43,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           scope: ["profile", "email", "https://www.googleapis.com/auth/drive"],
           accessType: "offline",
           prompt: "consent",
+          authorizationURL: "https://accounts.google.com/o/oauth2/auth?hl=en",
+          tokenURL: "https://oauth2.googleapis.com/token",
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
@@ -87,6 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         scope: ["profile", "email", "https://www.googleapis.com/auth/drive"],
         accessType: "offline",
         prompt: "consent",
+        lang: "en",
       }),
     );
 
@@ -138,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
-  
+
   // Get a specific file or folder by ID
   app.get("/api/drive/files/:fileId", isAuthenticated, async (req, res) => {
     try {
@@ -158,9 +161,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const file = req.files.file;
       const parentFolderId = req.body.parentFolderId;
-      
+
       // Pass the parent folder ID if available
-      const result = await googleDriveService.uploadFile(req.user, file, parentFolderId);
+      const result = await googleDriveService.uploadFile(
+        req.user,
+        file,
+        parentFolderId,
+      );
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });
@@ -190,57 +197,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
-  
+
   // Endpoint for file download with custom filename
-  app.get("/api/drive/files/:fileId/download", isAuthenticated, async (req, res) => {
-    try {
-      const fileId = req.params.fileId;
-      const filename = req.query.filename || '';
-      const file = await googleDriveService.getFile(req.user, fileId);
-      
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${filename || file.name}"`,
-      );
-      res.setHeader(
-        "Content-Type",
-        file.mimeType || "application/octet-stream",
-      );
-      
-      const fileStream = await googleDriveService.downloadFile(
-        req.user,
-        fileId,
-      );
-      fileStream.pipe(res);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  });
-  
+  app.get(
+    "/api/drive/files/:fileId/download",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const fileId = req.params.fileId;
+        const filename = req.query.filename || "";
+        const file = await googleDriveService.getFile(req.user, fileId);
+
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${filename || file.name}"`,
+        );
+        res.setHeader(
+          "Content-Type",
+          file.mimeType || "application/octet-stream",
+        );
+
+        const fileStream = await googleDriveService.downloadFile(
+          req.user,
+          fileId,
+        );
+        fileStream.pipe(res);
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
+      }
+    },
+  );
+
   // Get file content for preview
-  app.get("/api/drive/files/:fileId/content", isAuthenticated, async (req, res) => {
-    try {
-      const fileId = req.params.fileId;
-      const file = await googleDriveService.getFile(req.user, fileId);
+  app.get(
+    "/api/drive/files/:fileId/content",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const fileId = req.params.fileId;
+        const file = await googleDriveService.getFile(req.user, fileId);
 
-      // Set appropriate content type
-      res.setHeader(
-        "Content-Type",
-        file.mimeType || "application/octet-stream",
-      );
-      
-      // For preview, we don't want to force download
-      // No Content-Disposition header for inline viewing
+        // Set appropriate content type
+        res.setHeader(
+          "Content-Type",
+          file.mimeType || "application/octet-stream",
+        );
 
-      const fileStream = await googleDriveService.downloadFile(
-        req.user,
-        fileId,
-      );
-      fileStream.pipe(res);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  });
+        // For preview, we don't want to force download
+        // No Content-Disposition header for inline viewing
+
+        const fileStream = await googleDriveService.downloadFile(
+          req.user,
+          fileId,
+        );
+        fileStream.pipe(res);
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
+      }
+    },
+  );
 
   app.delete("/api/drive/files/:fileId", isAuthenticated, async (req, res) => {
     try {
@@ -251,133 +266,165 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: (error as Error).message });
     }
   });
-  
+
   // Create a new folder
   app.post("/api/drive/folders", isAuthenticated, async (req, res) => {
     try {
       const { name, parentId } = req.body;
-      
+
       if (!name) {
         return res.status(400).json({ message: "Folder name is required" });
       }
-      
+
       const folder = await googleDriveService.createFolder(
-        req.user, 
-        name, 
-        parentId
+        req.user,
+        name,
+        parentId,
       );
-      
+
       res.json(folder);
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });
     }
   });
-  
+
   // List folder contents
-  app.get("/api/drive/folders/:folderId/files", isAuthenticated, async (req, res) => {
-    try {
-      const folderId = req.params.folderId;
-      const files = await googleDriveService.listFolderContents(req.user, folderId);
-      res.json(files);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  });
-  
-  // Move a file to a different folder
-  app.patch("/api/drive/files/:fileId/move", isAuthenticated, async (req, res) => {
-    try {
-      const fileId = req.params.fileId;
-      const { targetFolderId, removeFromParents } = req.body;
-      
-      if (!targetFolderId) {
-        return res.status(400).json({ message: "Target folder ID is required" });
+  app.get(
+    "/api/drive/folders/:folderId/files",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const folderId = req.params.folderId;
+        const files = await googleDriveService.listFolderContents(
+          req.user,
+          folderId,
+        );
+        res.json(files);
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
       }
-      
-      const updatedFile = await googleDriveService.moveFile(
-        req.user,
-        fileId,
-        targetFolderId,
-        removeFromParents
-      );
-      
-      res.json(updatedFile);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  });
-  
+    },
+  );
+
+  // Move a file to a different folder
+  app.patch(
+    "/api/drive/files/:fileId/move",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const fileId = req.params.fileId;
+        const { targetFolderId, removeFromParents } = req.body;
+
+        if (!targetFolderId) {
+          return res
+            .status(400)
+            .json({ message: "Target folder ID is required" });
+        }
+
+        const updatedFile = await googleDriveService.moveFile(
+          req.user,
+          fileId,
+          targetFolderId,
+          removeFromParents,
+        );
+
+        res.json(updatedFile);
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
+      }
+    },
+  );
+
   // Search for files
   app.get("/api/drive/search", isAuthenticated, async (req, res) => {
     try {
       const query = req.query.q as string;
-      
+
       if (!query) {
         return res.status(400).json({ message: "Search query is required" });
       }
-      
+
       const files = await googleDriveService.searchFiles(req.user, query);
       res.json(files);
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });
     }
   });
-  
+
   // Share a file with another user
   app.post("/api/drive/share", isAuthenticated, async (req, res) => {
     try {
       const { fileId, emailAddress, role, sendNotification } = req.body;
-      
+
       if (!fileId || !emailAddress) {
-        return res.status(400).json({ message: "fileId and emailAddress are required" });
+        return res
+          .status(400)
+          .json({ message: "fileId and emailAddress are required" });
       }
-      
+
       const permission = await googleDriveService.shareFile(
-        req.user, 
-        fileId, 
-        emailAddress, 
-        role || 'reader', 
-        sendNotification !== false
+        req.user,
+        fileId,
+        emailAddress,
+        role || "reader",
+        sendNotification !== false,
       );
-      
+
       res.json(permission);
     } catch (error) {
       res.status(500).json({ message: (error as Error).message });
     }
   });
-  
+
   // Get file permissions
-  app.get("/api/drive/permissions/:fileId", isAuthenticated, async (req, res) => {
-    try {
-      const fileId = req.params.fileId;
-      
-      if (!fileId) {
-        return res.status(400).json({ message: "fileId is required" });
+  app.get(
+    "/api/drive/permissions/:fileId",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const fileId = req.params.fileId;
+
+        if (!fileId) {
+          return res.status(400).json({ message: "fileId is required" });
+        }
+
+        const permissions = await googleDriveService.getFilePermissions(
+          req.user,
+          fileId,
+        );
+        res.json(permissions);
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
       }
-      
-      const permissions = await googleDriveService.getFilePermissions(req.user, fileId);
-      res.json(permissions);
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  });
-  
+    },
+  );
+
   // Remove file permission
-  app.delete("/api/drive/permissions/:fileId/:permissionId", isAuthenticated, async (req, res) => {
-    try {
-      const { fileId, permissionId } = req.params;
-      
-      if (!fileId || !permissionId) {
-        return res.status(400).json({ message: "fileId and permissionId are required" });
+  app.delete(
+    "/api/drive/permissions/:fileId/:permissionId",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { fileId, permissionId } = req.params;
+
+        if (!fileId || !permissionId) {
+          return res
+            .status(400)
+            .json({ message: "fileId and permissionId are required" });
+        }
+
+        await googleDriveService.removeFilePermission(
+          req.user,
+          fileId,
+          permissionId,
+        );
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
       }
-      
-      await googleDriveService.removeFilePermission(req.user, fileId, permissionId);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: (error as Error).message });
-    }
-  });
-  
+    },
+  );
+
   // Get Google Drive storage usage
   app.get("/api/drive/storage", isAuthenticated, async (req, res) => {
     try {

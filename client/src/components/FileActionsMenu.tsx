@@ -15,7 +15,7 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
   const handleDownload = async () => {
     try {
       await downloadFile(file.id, file.name);
-      onAction('download');
+      onAction("download");
     } catch (error) {
       toast({
         title: "Download failed",
@@ -26,25 +26,25 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
   };
 
   return (
-    <div className="absolute right-0 mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border transform -translate-x-full">
+    <div className="absolute right-0 top-full mt-1 bg-card rounded-md shadow-lg py-1 w-48 z-10 border border-border">
       {isFolder ? (
-        <button 
+        <button
           className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
-          onClick={() => onAction('open-folder')}
+          onClick={() => onAction("open-folder")}
         >
           <span className="material-icons mr-3">folder_open</span>
           Open Folder
         </button>
       ) : (
         <>
-          <button 
+          <button
             className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
-            onClick={() => onAction('preview')}
+            onClick={() => onAction("preview")}
           >
             <span className="material-icons mr-3">visibility</span>
             Preview
           </button>
-          <button 
+          <button
             className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
             onClick={handleDownload}
           >
@@ -53,38 +53,38 @@ const FileActionsMenu: FC<FileActionsMenuProps> = ({ file, onAction }) => {
           </button>
         </>
       )}
-      
-      <a 
-        href={file.webViewLink || "#"} 
-        target="_blank" 
+
+      <a
+        href={file.webViewLink || "#"}
+        target="_blank"
         rel="noopener noreferrer"
         className="flex items-center px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
       >
         <span className="material-icons mr-3">open_in_new</span>
         Open in Drive
       </a>
-      
-      <button 
+
+      <button
         className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
-        onClick={() => onAction('share')}
+        onClick={() => onAction("share")}
       >
         <span className="material-icons mr-3">share</span>
         Share
       </button>
-      
-      <button 
+
+      <button
         className="flex items-center w-full px-4 py-2 text-sm text-primary hover:text-primary-foreground hover:bg-primary transition-colors rounded-none"
-        onClick={() => onAction('move')}
+        onClick={() => onAction("move")}
       >
         <span className="material-icons mr-3">drive_file_move</span>
         Move
       </button>
-      
+
       <div className="border-t border-border"></div>
-      
-      <button 
+
+      <button
         className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:text-destructive-foreground hover:bg-destructive transition-colors rounded-none"
-        onClick={() => onAction('delete')}
+        onClick={() => onAction("delete")}
       >
         <span className="material-icons mr-3">delete</span>
         Delete

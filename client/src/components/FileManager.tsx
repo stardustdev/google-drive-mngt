@@ -117,7 +117,7 @@ const FileManager: FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
+    <div className="flex-1 flex flex-col">
       {/* Top Bar with Actions */}
       <div className="bg-background border-b border-border py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
@@ -169,8 +169,8 @@ const FileManager: FC = () => {
           </Button>
 
           <div className="hidden md:block">
-            <Tabs 
-              defaultValue="list" 
+            <Tabs
+              defaultValue="list"
               value={viewMode}
               onValueChange={(value) => setViewMode(value as "list" | "grid")}
               className="w-[200px]"
@@ -201,18 +201,26 @@ const FileManager: FC = () => {
 
             <div className="flex items-center justify-between gap-2">
               <div className="md:hidden">
-                <Tabs 
-                  defaultValue="list" 
+                <Tabs
+                  defaultValue="list"
                   value={viewMode}
-                  onValueChange={(value) => setViewMode(value as "list" | "grid")}
+                  onValueChange={(value) =>
+                    setViewMode(value as "list" | "grid")
+                  }
                   className="w-[160px]"
                 >
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="list" className="flex items-center gap-1">
+                    <TabsTrigger
+                      value="list"
+                      className="flex items-center gap-1"
+                    >
                       <List size={14} />
                       <span>List</span>
                     </TabsTrigger>
-                    <TabsTrigger value="grid" className="flex items-center gap-1">
+                    <TabsTrigger
+                      value="grid"
+                      className="flex items-center gap-1"
+                    >
                       <Grid size={14} />
                       <span>Grid</span>
                     </TabsTrigger>

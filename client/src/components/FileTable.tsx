@@ -12,14 +12,22 @@ interface FileTableProps {
 
 const FileTable: FC<FileTableProps> = ({ files, onAction }) => {
   return (
-    <div className="w-full overflow-auto rounded-md border border-border">
-      <table className="w-full border-collapse">
+    <div className="w-full overflow-auto flex-1 flex rounded-md border border-border">
+      <table className="w-full flex-1 border-collapse">
         <thead>
           <tr className="bg-muted/50 border-b border-border">
-            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">Name</th>
-            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">Modified</th>
-            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">Size</th>
-            <th className="py-3 px-4 text-right text-sm font-medium text-foreground w-[60px]">Actions</th>
+            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">
+              Name
+            </th>
+            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">
+              Modified
+            </th>
+            <th className="py-3 px-4 text-left text-sm font-medium text-foreground">
+              Size
+            </th>
+            <th className="py-3 px-4 text-right text-sm font-medium text-foreground w-[60px]">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -40,18 +48,18 @@ interface FileTableRowProps {
 const FileTableRow: FC<FileTableRowProps> = ({ file, onAction }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  
+
   // Format the modified date
-  const formattedDate = file.modifiedTime 
+  const formattedDate = file.modifiedTime
     ? format(new Date(file.modifiedTime), "MMM d, yyyy")
     : "Unknown date";
-  
+
   // Format the file size
   const formattedSize = formatFileSize(file.size);
-  
+
   // Determine if file is a folder
   const isFolder = file.mimeType === "application/vnd.google-apps.folder";
-  
+
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -63,61 +71,68 @@ const FileTableRow: FC<FileTableRowProps> = ({ file, onAction }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  
+
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsMenuOpen(!isMenuOpen);
   };
-  
+
   const handleRowClick = () => {
     if (isFolder) {
-      onAction('open-folder', file);
+      onAction("open-folder", file);
     }
   };
-  
+
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isFolder) {
-      onAction('open-folder', file);
+      onAction("open-folder", file);
     } else {
-      onAction('preview', file);
+      onAction("preview", file);
     }
   };
-  
+
   return (
-    <tr 
-      className={`border-b border-border hover:bg-muted/30 ${isFolder ? 'cursor-pointer' : 'cursor-pointer'}`}
+    <tr
+      className={`border-b border-border hover:bg-muted/30 ${isFolder ? "cursor-pointer" : "cursor-pointer"}`}
       onClick={handleRowClick}
       onDoubleClick={handleDoubleClick}
     >
       <td className="py-3 px-4">
         <div className="flex items-center space-x-3">
-          <div className={isFolder ? 'text-primary' : ''}>
+          <div className={isFolder ? "text-primary" : ""}>
             <FileTypeIcon mimeType={file.mimeType} size="small" />
           </div>
-          <span className="font-medium truncate max-w-[300px] inline-block" title={file.name}>
+          <span
+            className="font-medium truncate max-w-[300px] inline-block"
+            title={file.name}
+          >
             {file.name}
           </span>
         </div>
       </td>
-      <td className="py-3 px-4 text-sm text-muted-foreground">{formattedDate}</td>
-      <td className="py-3 px-4 text-sm text-muted-foreground">{isFolder ? '-' : formattedSize}</td>
+      <td className="py-3 px-4 text-sm text-muted-foreground">
+        {formattedDate}
+      </td>
+      <td className="py-3 px-4 text-sm text-muted-foreground">
+        {isFolder ? "-" : formattedSize}
+      </td>
       <td className="py-3 px-4 text-right">
         <div className="relative inline-block" ref={menuRef}>
-          <button 
+          <button
             className="p-1.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors btn-theme-primary"
             onClick={handleMenuToggle}
           >
             <span className="material-icons text-lg">more_vert</span>
           </button>
-          
+
           {isMenuOpen && (
-            <FileActionsMenu 
-              file={file} 
+            <FileActionsMenu
+              file={file}
               onAction={(action) => {
                 onAction(action, file);
                 setIsMenuOpen(false);
-              }} 
+              }}
             />
           )}
         </div>

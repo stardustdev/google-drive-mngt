@@ -2,7 +2,14 @@ import { FC } from "react";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useLocation } from "wouter";
 
@@ -14,17 +21,18 @@ const Login: FC = () => {
   const handleLogin = async () => {
     try {
       await login();
-      
+
       // Force a full page refresh to ensure all components are properly initialized
       window.location.href = "/";
-      
+
       toast({
         title: "Login successful",
         description: "You've been successfully logged in",
       });
     } catch (error) {
-      const errorMessage = (error instanceof Error) ? error.message : "Unknown error";
-      
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
       // Check if error is related to popup blockers
       if (errorMessage.includes("Popup blocked")) {
         toast({
@@ -47,25 +55,25 @@ const Login: FC = () => {
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      
+
       <div className="max-w-md w-full">
         <Card className="border-border shadow-md">
           <CardHeader className="space-y-2">
-            <div className="flex items-center justify-center mb-6">
-              <img 
-                src="https://www.gstatic.com/images/branding/product/1x/drive_48dp.png" 
-                alt="Google Drive logo" 
-                className="w-12 h-12 mr-4" 
-              />
-              <h1 className="text-2xl font-bold tracking-tight text-primary">Drive Manager</h1>
-            </div>
-            <CardTitle className="text-xl text-center">Sign in</CardTitle>
             <CardDescription className="text-center">
-              Access your Drive files and documents
+              <div className="flex items-center justify-center">
+                <img
+                  src="https://www.gstatic.com/images/branding/product/1x/drive_48dp.png"
+                  alt="Google Drive logo"
+                  className="w-12 h-12 mr-4"
+                />
+                <h1 className="text-2xl font-bold tracking-tight text-primary">
+                  Drive Manager
+                </h1>
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-            <Button 
+            <Button
               className="flex items-center justify-center w-full space-x-2 btn-theme-filled"
               onClick={handleLogin}
               disabled={isLoading}
@@ -80,9 +88,7 @@ const Login: FC = () => {
               )}
             </Button>
           </CardContent>
-          <CardFooter className="flex justify-center text-sm text-muted-foreground">
-            <p>No registration required. Sign in with your existing Google account.</p>
-          </CardFooter>
+          <CardFooter className="flex justify-center text-sm text-muted-foreground"></CardFooter>
         </Card>
       </div>
     </div>

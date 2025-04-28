@@ -1,5 +1,12 @@
 import { FC, useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
@@ -23,35 +30,40 @@ interface FolderInfo {
   name: string;
 }
 
-const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, parentFolderId }) => {
+const UploadModal: FC<UploadModalProps> = ({
+  isOpen,
+  onClose,
+  onUploadComplete,
+  parentFolderId,
+}) => {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [parentFolder, setParentFolder] = useState<FolderInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  
+
   // Fetch parent folder info if we have an ID
   useEffect(() => {
     if (parentFolderId && isOpen) {
       const fetchFolderInfo = async () => {
         try {
           const response = await fetch(`/api/drive/files/${parentFolderId}`, {
-            credentials: 'include',
+            credentials: "include",
           });
-          
+
           if (response.ok) {
             const folder = await response.json();
             setParentFolder({
               id: folder.id,
-              name: folder.name
+              name: folder.name,
             });
           }
         } catch (error) {
           console.error("Error fetching folder info:", error);
         }
       };
-      
+
       fetchFolderInfo();
     } else {
       setParentFolder(null);
@@ -60,9 +72,9 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const newFiles = Array.from(event.target.files).map(file => ({
+      const newFiles = Array.from(event.target.files).map((file) => ({
         file,
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
       }));
       setSelectedFiles([...selectedFiles, ...newFiles]);
     }
@@ -73,33 +85,33 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
   };
 
   const handleRemoveFile = (id: string) => {
-    setSelectedFiles(selectedFiles.filter(f => f.id !== id));
+    setSelectedFiles(selectedFiles.filter((f) => f.id !== id));
   };
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
-    
+
     setIsUploading(true);
     setProgress(0);
-    
+
     try {
       const totalFiles = selectedFiles.length;
       let completedFiles = 0;
-      
+
       for (const selectedFile of selectedFiles) {
         // Pass the parent folder ID if available
         await uploadFile(selectedFile.file, parentFolderId);
         completedFiles++;
         setProgress(Math.round((completedFiles / totalFiles) * 100));
       }
-      
-      const locationText = parentFolder ? ` to ${parentFolder.name}` : '';
-      
+
+      const locationText = parentFolder ? ` to ${parentFolder.name}` : "";
+
       toast({
         title: "Upload complete",
-        description: `Successfully uploaded ${totalFiles} file${totalFiles !== 1 ? 's' : ''}${locationText}`,
+        description: `Successfully uploaded ${totalFiles} file${totalFiles !== 1 ? "s" : ""}${locationText}`,
       });
-      
+
       onUploadComplete();
       handleClose();
     } catch (error) {
@@ -122,11 +134,11 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
@@ -137,56 +149,68 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
           {parentFolder && (
             <DialogDescription className="flex items-center gap-2 mt-1 text-sm">
               <Folder className="h-4 w-4" />
-              <span>Uploading to: <span className="font-medium">{parentFolder.name}</span></span>
+              <span>
+                Uploading to:{" "}
+                <span className="font-medium">{parentFolder.name}</span>
+              </span>
             </DialogDescription>
           )}
         </DialogHeader>
-        
+
         <div className="py-4">
-          <div 
+          <div
             className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
-              const files = Array.from(e.dataTransfer.files).map(file => ({
+              const files = Array.from(e.dataTransfer.files).map((file) => ({
                 file,
-                id: crypto.randomUUID()
+                id: crypto.randomUUID(),
               }));
               setSelectedFiles([...selectedFiles, ...files]);
             }}
           >
-            <span className="material-icons text-5xl text-gray-400 mb-2">cloud_upload</span>
+            <span className="material-icons text-5xl text-gray-400 mb-2">
+              cloud_upload
+            </span>
             <h4 className="font-medium mb-1">Drag files here</h4>
-            <p className="text-sm text-gray-500 mb-4">or click to browse files</p>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileSelect} 
-              className="hidden" 
-              multiple 
+            <p className="text-sm text-gray-500 mb-4">
+              or click to browse files
+            </p>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              multiple
             />
             <Button
               onClick={handleBrowseClick}
               variant="default"
-              className="bg-google-blue hover:bg-blue-600"
+              className="btn-theme-primary"
             >
               Browse Files
             </Button>
           </div>
-          
+
           {selectedFiles.length > 0 && (
             <div className="mt-4 space-y-3">
               <h5 className="font-medium text-sm">Selected Files</h5>
               {selectedFiles.map((selectedFile) => (
-                <div 
-                  key={selectedFile.id} 
+                <div
+                  key={selectedFile.id}
                   className="flex items-center justify-between bg-gray-50 p-3 rounded-md"
                 >
                   <div className="flex items-center overflow-hidden">
-                    <span className="material-icons text-google-blue mr-3">description</span>
+                    <span className="material-icons text-google-blue mr-3">
+                      description
+                    </span>
                     <div className="overflow-hidden">
-                      <div className="font-medium text-sm truncate" title={selectedFile.file.name}>
+                      <div
+                        className="font-medium text-sm truncate"
+                        title={selectedFile.file.name}
+                      >
                         {selectedFile.file.name}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -194,7 +218,7 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
                       </div>
                     </div>
                   </div>
-                  <button 
+                  <button
                     className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
                     onClick={() => handleRemoveFile(selectedFile.id)}
                     disabled={isUploading}
@@ -205,7 +229,7 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
               ))}
             </div>
           )}
-          
+
           {isUploading && (
             <div className="mt-4">
               <div className="flex justify-between text-sm mb-1">
@@ -216,7 +240,7 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
             </div>
           )}
         </div>
-        
+
         <DialogFooter className="flex justify-between sm:justify-between">
           <Button
             variant="outline"
@@ -228,7 +252,7 @@ const UploadModal: FC<UploadModalProps> = ({ isOpen, onClose, onUploadComplete, 
           <Button
             onClick={handleUpload}
             disabled={selectedFiles.length === 0 || isUploading}
-            className="bg-google-blue hover:bg-blue-600"
+            className="btn-theme-primary"
           >
             {isUploading ? "Uploading..." : "Upload"}
           </Button>
